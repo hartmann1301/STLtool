@@ -1,0 +1,58 @@
+solid Untitled-613df58c
+facet normal -1.0 0.0 0.0
+  outer loop
+    vertex 0.0 100.0 0.0
+    vertex 0.0 0.0 -9.999999999999998
+    vertex 0.0 0.0 100.0
+  endloop
+endfacet
+facet normal -1.0 0.0 0.0
+  outer loop
+    vertex 0.0 0.0 -9.999999999999998
+    vertex 0.0 100.0 0.0
+    vertex 0.0 100.0 -9.999999999999998
+  endloop
+endfacet
+facet normal 0.8164965809277261 0.4082482904638631 0.4082482904638631
+  outer loop
+    vertex 0.0 100.0 0.0
+    vertex 0.0 0.0 100.0
+    vertex 50.0 0.0 0.0
+  endloop
+endfacet
+facet normal 0.0 -1.0 0.0
+  outer loop
+    vertex 50.0 0.0 0.0
+    vertex 0.0 0.0 -9.999999999999998
+    vertex 50.0 0.0 -9.999999999999998
+  endloop
+endfacet
+facet normal 0.0 -1.0 0.0
+  outer loop
+    vertex 0.0 0.0 -9.999999999999998
+    vertex 50.0 0.0 0.0
+    vertex 0.0 0.0 100.0
+  endloop
+endfacet
+facet normal 0.0 0.0 -1.0
+  outer loop
+    vertex 50.0 0.0 -9.999999999999998
+    vertex 0.0 0.0 -9.999999999999998
+    vertex 0.0 100.0 -9.999999999999998
+  endloop
+endfacet
+facet normal 0.8944271909999161 0.44721359549995804 -0.0
+  outer loop
+    vertex 0.0 100.0 -9.999999999999998
+    vertex 50.0 0.0 0.0
+    vertex 50.0 0.0 -9.999999999999998
+  endloop
+endfacet
+facet normal 0.8944271909999161 0.44721359549995804 -0.0
+  outer loop
+    vertex 50.0 0.0 0.0
+    vertex 0.0 100.0 -9.999999999999998
+    vertex 0.0 100.0 0.0
+  endloop
+endfacet
+endsolid Untitled-613df58c
