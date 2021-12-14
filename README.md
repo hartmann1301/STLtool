@@ -1,2 +1,2 @@
 # STLtool
-a tool to read stl.file and view or modify them
+a tool to read stl-files and view or modify them
