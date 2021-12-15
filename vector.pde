@@ -100,7 +100,7 @@ class Vector
 
   String toString() 
   {
-    return new String("(x:" + x + ",  y:" + y + ",  z:" + z + ") ");
+    return new String("x:" + x + ",  y:" + y + ",  z:" + z + " ");
   }
 
   float x, y, z;

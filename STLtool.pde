@@ -24,13 +24,13 @@ void setup()
 
 
   //parser.loadFile("eve.stl");
-  //parser.loadFile("stl-examples/abstaktT.stl");
-  parser.loadFile("stl-examples/owl.stl");
+  parser.loadFile("stl-examples/abstaktT.stl");
+  //parser.loadFile("stl-examples/owl.stl");
 
   //parser.printTriangles();
   parser.printReport();
 
-  skaler.printReport();
+  boxer.printReport();
 
   data.loadParsedTriangles();
 
@@ -43,11 +43,14 @@ void setup()
 }
 
 void draw() 
-{  
-  drawMonitor.start();  
-
+{
+  if (focused == false)
+    return;
+  
   background(0);  // Set background to black  
   text(slicerVersion, 10, 20, 0); 
+
+  drawMonitor.start();  
 
   if (mousePressed)
     mouseCurrentlyPressed();

@@ -75,7 +75,7 @@ class FastData
         zPos += (zLen - 1) / 2;
       }
 
-      if (previewRows < zPos)
+      if (rows < zPos)
         continue;
 
       final int grayTone = 200;

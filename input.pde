@@ -36,10 +36,10 @@ void keyPressed() {
     preview.zoom -= 10;
     break;
     case('o'):
-    previewRows += 1;   
+    rows += 1;   
     break;
     case('p'):
-    previewRows -= 1;
+    rows -= 1;
     break;
   }
 

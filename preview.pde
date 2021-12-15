@@ -23,7 +23,7 @@ class Preview
     rotatePreview();
 
     //offset to the object
-    translateToPoint(parser.objectLen, -0.5);  
+    translateToPoint(boxer.objectLen, -0.5);  
 
     // default style, is maybe changed later
     stroke(255);
@@ -62,7 +62,7 @@ class Preview
 
   private void translateForZoom()
   {
-    int maxDimension = (int) max(parser.objectLen.x, parser.objectLen.y, parser.objectLen.z);
+    int maxDimension = (int) max(boxer.objectLen.x, boxer.objectLen.y, boxer.objectLen.z);
 
     // default camera height: (height/2.0) / tan(PI*30.0 / 180.0) => (height/2.0) * 0,577 
     float cameraOffsetZ = (height/2.0) / tan(PI*30.0 / 180.0);
@@ -129,7 +129,7 @@ class Preview
       {
         for (int z = 0; z < data.axisLength.z - 1; z++)
         {
-          if (previewRows < z)
+          if (rows < z)
             continue;
 
           BitStatus s = data.getPoint(x, y, z);
@@ -157,7 +157,7 @@ class Preview
 
     color fillColor = 0;
 
-    if (previewRows == zPos)
+    if (rows == zPos)
     {
       s = BitStatus.UNKNOWN;
     }
@@ -190,7 +190,7 @@ class Preview
     fill(f);
     
     // hier werden die werte zurückgerechnet
-    final float fak = skaler.faktor;
+    final float fak = boxer.sliceFaktor;
     xPos *= fak;
     yPos *= fak;
     zPos *= fak;    
@@ -209,7 +209,7 @@ class Preview
   {   
     for (Triangle t : parser.triangleList)
     {
-      if (previewRows < t.getMinZ())
+      if (rows < t.getMinZ())
         continue;
 
       // im data array werden die werte schon ohne minLen abgelegt
@@ -251,6 +251,12 @@ class Preview
     popStyle();
   }
   
+  void drawObjectLenString()
+  {
+    // TODO do a better format
+    text(boxer.objectLen.toString() + " mm", 0, 20);
+  }
+  
   void drawArrayBox()
   {
     pushStyle();
@@ -259,7 +265,7 @@ class Preview
     stroke(stdColor.white);
     noFill();
     
-    float f = skaler.faktor;
+    float f = boxer.sliceFaktor;
 
     translate(-f / 2, -f / 2, -f / 2);
 
@@ -268,6 +274,7 @@ class Preview
     rotateX(radians(-90));
     textSize(5);
     text(data.axisLength.toString(), 0, 10);
+    drawObjectLenString();
     popMatrix();
 
     int xLen = data.axisLength.x;

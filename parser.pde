@@ -78,7 +78,7 @@ class Parser
     // sortiert die liste nach z values
     Collections.sort(triangleList, new TriangleComparator());
 
-    skaler.setFaktor(1.0);
+    boxer.update();
   } 
 
   public int getListSize()

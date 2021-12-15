@@ -1,31 +1,35 @@
-Skaler skaler = new Skaler();
+Boxer boxer = new Boxer();
 
-class Skaler
+class Boxer
 {
-  // those scale with faktor
-  Vector minLen, maxLen, objectLen;
+  // those scale with sliceFaktor
+  Vector minLen, maxLen, objectLen, objectSlices;
 
-  private float faktor = 0;
+  private float sliceFaktor = 1.0;
+  private float scaleFaktor = 1.0;
 
-  public void setFaktor(float f)
+  public void setSliceFaktor(float f)
   {
-    if (faktor == f)
+    if (sliceFaktor == f)
       return;
 
-    faktor = f;
+    sliceFaktor = f;
 
-    println("changed faktor to: " + faktor);
+    //println("changed sliceFaktor to: " + sliceFaktor);
 
-    // set maximum values for the min() max() funtions to work
-    minLen = new Vector(parser.minLen.getData()); 
-    maxLen = new Vector(parser.maxLen.getData());
-    objectLen = new Vector(parser.objectLen.getData());
+    update();
+  }
 
-    minLen.divide(faktor);
-    maxLen.divide(faktor);
-    objectLen.divide(faktor);
-    
-    updateGui();
+  public void setScaleFaktor(float f)
+  {
+    if (scaleFaktor == f)
+      return;
+
+    scaleFaktor = f;
+
+    println("changed scaleFaktor to: " + scaleFaktor);
+
+    update();
   }
 
   public Triangle getTriangle(int i)
@@ -34,24 +38,48 @@ class Skaler
 
     temp.minus(parser.minLen);
 
-    temp.divide(faktor);
+    temp.multiply(scaleFaktor);
+
+    temp.divide(sliceFaktor);
 
     return temp;
   }  
 
+  void update()
+  {
+    updateLenVectors();
+    updateGui();
+  }
+
+  private void updateLenVectors()
+  {
+    // set maximum values for the min() max() funtions to work
+    minLen = new Vector(parser.minLen.getData()); 
+    maxLen = new Vector(parser.maxLen.getData());
+    objectLen = new Vector(parser.objectLen.getData());
+    objectSlices = new Vector(parser.objectLen.getData());
+
+    minLen.multiply(scaleFaktor);
+    maxLen.multiply(scaleFaktor);
+    objectLen.multiply(scaleFaktor);
+    objectSlices.multiply(scaleFaktor);
+
+    objectSlices.divide(sliceFaktor);
+  }
+
   private void updateGui()
   {
-    gui.previewRowsSlider.setRange(1, objectLen.z + 1);
-    gui.previewRowsSlider.setValue(objectLen.z + 1);
+    gui.previewRowsSlider.setRange(1, objectSlices.z + 1);
+    gui.previewRowsSlider.setValue(objectSlices.z + 1);
     gui.previewRowsSlider.setDecimalPrecision(1);
-    //gui.previewRowsSlider.setNumberOfTickMarks(objectLen.z + 1);
+    //gui.previewRowsSlider.setNumberOfTickMarks(objectSlices.z + 1);
   }
 
   public void printReport()
   {
-    println("Skaler Report:");
+    println("Boxer Report:");
     println("  min: " + minLen.toString());
     println("  max: " + maxLen.toString());
-    println("  len: " + objectLen.toString());
+    println("  len: " + objectSlices.toString());
   };
 }

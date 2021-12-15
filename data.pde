@@ -16,9 +16,9 @@ class Data
   void loadParsedTriangles()
   {
     // int() statt round() führt dazu, dass bei minuswerten die erste box abgeschnitten wird
-    int x = round(skaler.objectLen.x + 1);
-    int y = round(skaler.objectLen.y + 1);
-    int z = round(skaler.objectLen.z + 1);
+    int x = round(boxer.objectSlices.x + 1);
+    int y = round(boxer.objectSlices.y + 1);
+    int z = round(boxer.objectSlices.z + 1);
 
     // add 2 that object is surrounded with empty bytes
     x += 2;
@@ -127,7 +127,7 @@ class Data
   {
     for (int i = 0; i < parser.getListSize(); i++)
     {
-      addPixelTriangle(skaler.getTriangle(i));
+      addPixelTriangle(boxer.getTriangle(i));
     }
   }
 
