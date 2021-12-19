@@ -1,39 +1,57 @@
 ControlP5 cp5;
 GUI gui = new GUI();
 
-int rows;
-
 final int On = 1;
 final int Off = 0;
 
-CheckBoxes checkBoxes = new CheckBoxes();
-final static class CheckBoxes
+static final class CheckBoxes
 {
-  final int autoRotation = 0;
-  final int coordinateSystem = 1;
-  final int arrayBox = 2;
+  static final int autoRotation = 0;
+  static final int coordinateSystem = 1;
+  static final int arrayBox = 2;
+}
+
+static final class PreviewStyles
+{
+  static final int originalSTL = 0;
+  static final int arrayOfBoxes = 1;
+  static final int optimizedBoxes = 2;
 }
 
 class GUI
 {
+  Textlabel lableVersion;
+
   CheckBox checkbox;
-  DropdownList previewTypeList;
+
+  DropdownList previewStylesList;
+  List previewTypes = Arrays.asList(
+    "orginal stl", 
+    "array of boxes", 
+    "optimized boxes"
+    );
 
   Accordion accordion;
 
   Slider2D previewAngle;
 
-  Slider previewRowsSlider;
+  Slider sliderRows;
 
-  Slider slicesSlider;
+  Slider sliderFrames;
+  Slider sliderBusy;
 
-  Slider framesSlider;
-  Slider percentSlider;
+  Textlabel lablePreviewInfo;
+
+  Slider sliderSlices;
+  Slider sliderScale;
+
+  Textlabel lableSlices;
+  Textlabel lableDimensions;
 
   final int xPosCamera = 0;
   final int yPosCamera = 1;
 
-  final int accWidth = 200;
+  final int accWidth = 220;
   final int gap = 5;
 
   final int sliderHeight = 20;
@@ -41,22 +59,37 @@ class GUI
 
   void init()
   {    
+    PFont font = createFont("arial", 12);
+    cp5.setFont(font);    
+
+    // create a new button with name 'buttonA'
+    cp5.addButton("loadFile")
+      .setValue(0)
+      .setPosition(gap, gap)
+      .setSize(sliderWidth, sliderHeight)
+      ;
+
+    lableVersion = cp5.addTextlabel("lableVersion")
+      .setPosition(width - 80, height - 30)
+      //.setPosition(0, 0)
+      .setText(slicerVersion)
+      ; 
+
     checkbox = cp5.addCheckBox("CheckBox")
-      .setPosition(10, 50)
-      .setSize(40, 40)
+      .setPosition(gap, 80)
+      .setSize(30, 30)
       .setItemsPerRow(1)
-      .setSpacingColumn(30)
-      .setSpacingRow(20)
+      .setSpacingRow(10)
       .setColorActive(stdColor.dark_green_1)
       .setColorBackground(stdColor.dark_red_1)
-      .addItem("Auto Rotation", checkBoxes.autoRotation)
-      .addItem("Coordinate System", checkBoxes.coordinateSystem)
-      .addItem("Array Box", checkBoxes.arrayBox);
+      .addItem("Auto Rotation", CheckBoxes.autoRotation)
+      .addItem("Coordinate System", CheckBoxes.coordinateSystem)
+      .addItem("Array Box", CheckBoxes.arrayBox);
 
     // set default values
-    checkbox.getItem(checkBoxes.autoRotation).setValue(Off);
-    checkbox.getItem(checkBoxes.coordinateSystem).setValue(On);
-    checkbox.getItem(checkBoxes.arrayBox).setValue(On);
+    checkbox.getItem(CheckBoxes.autoRotation).setValue(Off);
+    checkbox.getItem(CheckBoxes.coordinateSystem).setValue(On);
+    checkbox.getItem(CheckBoxes.arrayBox).setValue(On);
 
     // groupCamera
     final color accBCcolor = color(255, 50);
@@ -64,7 +97,8 @@ class GUI
     Group groupCamera = cp5.addGroup("Camera and Preview")
       .setBackgroundHeight(2 * sliderHeight + angelSliderheight + 4 * gap)
       .setBackgroundColor(accBCcolor)
-      ;
+      .setBarHeight(sliderHeight);
+    ;
 
     final int horizontalMax = 180;
     final int verticalMax = 100;
@@ -84,19 +118,21 @@ class GUI
       .setGroup(groupCamera)
       ;
 
-    previewRowsSlider = cp5.addSlider("rows")
+    sliderRows = cp5.addSlider("rows")
       .setPosition(gap, angelSliderheight + 3 * gap + sliderHeight)
       .setSize(sliderWidth, 20)
       .setGroup(groupCamera)
+      .setDecimalPrecision(0)
       ;
 
     // groupFramesAndCPU
     Group groupFramesAndCPU = cp5.addGroup("Frames and CPU")
       //.setBackgroundHeight(sliderHeight * 2 + gap * 3)
       .setBackgroundColor(accBCcolor)
-      ;
+      .setBarHeight(sliderHeight);
+    ;
 
-    percentSlider = cp5.addSlider("percent")
+    sliderBusy = cp5.addSlider("busy")
       .setPosition(gap, gap)
       .setMin(0)
       .setMax(100)
@@ -104,20 +140,26 @@ class GUI
       .setGroup(groupFramesAndCPU)
       ;
 
-    framesSlider = cp5.addSlider("frames")
+    sliderFrames = cp5.addSlider("frames")
       .setPosition(gap, gap * 2 + sliderHeight)
       .setMin(0)
       .setSize(sliderWidth, sliderHeight)
       .setGroup(groupFramesAndCPU)
       ;
 
+    lablePreviewInfo = cp5.addTextlabel("lablePreviewInfo")
+      .setPosition(gap, gap * 3 + sliderHeight * 2)
+      .setGroup(groupFramesAndCPU)
+      ;  
+
     // groupScaleAndSlices
     Group groupScaleAndSlices = cp5.addGroup("Scale and Slices")
       //.setBackgroundHeight(sliderHeight * 1 + gap * 2)
       .setBackgroundColor(accBCcolor)
-      ;
+      .setBarHeight(sliderHeight);
+    ;
 
-    slicesSlider = cp5.addSlider("sCale")
+    sliderScale = cp5.addSlider("sCale")
       .setPosition(gap, gap)
       .setSize(sliderWidth, sliderHeight)
       .setValue(1)
@@ -126,12 +168,22 @@ class GUI
       .setGroup(groupScaleAndSlices)
       ;
 
-    slicesSlider = cp5.addSlider("slices")
+    lableDimensions = cp5.addTextlabel("lableDimensions")
       .setPosition(gap, gap * 2 + sliderHeight)
+      .setGroup(groupScaleAndSlices)
+      ;
+
+    sliderSlices = cp5.addSlider("slices")
+      .setPosition(gap, gap * 3 + sliderHeight * 2)
       .setSize(sliderWidth, sliderHeight)
       .setValue(1)
       .setMin(0.3) 
       .setMax(3) 
+      .setGroup(groupScaleAndSlices)
+      ;
+
+    lableSlices = cp5.addTextlabel("lableSlices")
+      .setPosition(gap, gap * 4 + sliderHeight * 3)
       .setGroup(groupScaleAndSlices)
       ;
 
@@ -147,25 +199,17 @@ class GUI
     accordion.open(0, 1, 2);
     accordion.setCollapseMode(Accordion.MULTI);
 
-    previewTypeList = cp5.addDropdownList("View Type")
-      .setPosition(width / 2, 10)
-      .setBackgroundColor(color(190))
-      .setItemHeight(20)
-      .setBarHeight(15)
-      .setValue(2)
-      .close()
+    // Warning, deprecated, should use addScrollableList
+    //cp5.addScrollableList("View Type")
+    previewStylesList = cp5.addDropdownList("previewStyle")  
+      .setPosition(width / 2 - sliderWidth / 2, gap)
+      .setSize(sliderWidth, sliderHeight * 4)
+      .setItemHeight(sliderHeight)
+      .setBarHeight(sliderHeight)
+      .addItems(previewTypes)
+      .setValue(PreviewStyles.optimizedBoxes)
+      .close()  
       ;
-
-    String[] previewTypeStrings = {
-      "orginal stl", 
-      "array of boxes", 
-      "optimized boxes"
-    };
-
-
-    for (int i=0; i<3; i++) {
-      previewTypeList.addItem(previewTypeStrings[i], i);
-    }
   }
 
   void changeCameraAngleX(float diff)
@@ -197,6 +241,42 @@ class GUI
   }
 };
 
+void previewStyle(int n)
+{
+  //println("update previewStyle");
+  String s = new String();
+  switch(n) 
+  {
+  case PreviewStyles.originalSTL: 
+    s = "Triangles: " + parser.getListSize();
+    break;
+  case PreviewStyles.arrayOfBoxes: 
+    s = "Shell: " + data.cntShell + ", Inside: " + data.cntInside + ", Outside: " + data.cntOutside;
+    break;
+  case PreviewStyles.optimizedBoxes: 
+    s = "Optimized Boxes: " + fastData.drawData.size();
+    break;
+  }
+  gui.lablePreviewInfo.setText(s);
+}
+
+public void loadFile() {
+  if (setupDone == false)
+    return;
+
+  selectInput("Select a file to process:", "fileSelected");
+}
+
+void fileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+
+    parser.loadFile(selection.getAbsolutePath());
+  }
+}
+
 public void resetCameraAngle() {
   // println("Reset Camera Angle:");
 
@@ -209,8 +289,6 @@ public void slices(float v) {
     return;
 
   boxer.setSliceFaktor(v);
-
-  updateObject();
 }
 
 public void sCale(float v) {
@@ -219,15 +297,6 @@ public void sCale(float v) {
     return;
 
   boxer.setScaleFaktor(v);
-
-  updateObject();
-}
-
-void updateObject()
-{
-  data.loadParsedTriangles();
-
-  fastData.calc();
 }
 
 void controlEvent(ControlEvent theEvent) {

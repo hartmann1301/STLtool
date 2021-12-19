@@ -93,6 +93,35 @@ class Vector
     z /= f;
   }
 
+  void rotate()
+  {
+    float temp;
+    
+    switch (keyCode)
+    {
+    case LEFT:
+      temp = x;
+      x = y;
+      y = -temp;
+      break;
+    case RIGHT:
+      temp = x;
+      x = -y;
+      y = temp;
+      break;
+    case UP:
+      temp = x;
+      x = z;
+      z = -temp; 
+      break;
+    case DOWN:
+      temp = x;
+      x = -z;
+      z = temp;
+      break;
+    }
+  }
+
   Vector getData()
   {
     return new Vector(x, y, z);

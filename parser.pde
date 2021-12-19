@@ -30,14 +30,14 @@ class Parser
         if (pieces.length == 0)
           continue;
 
-        //println(line);
+        //debug.println(line);
 
         switch(p)
         {
         case NONE :
           if (pieces[0].equals("outer"))
           {
-            //println("start triangle");
+            //debug.println("start triangle");
             p = ParseToken.P1;
           }
           break;
@@ -56,13 +56,11 @@ class Parser
           // create a deep copy
           Triangle newTriangle = new Triangle(tempTriangle);
 
-          updateMinMaxLen(newTriangle);
-
           triangleList.add(newTriangle);
 
           //newTriangle.toTerminal();
 
-          //println("end triangle");
+          //debug.println("end triangle");
           break;
         }
       }
@@ -72,14 +70,27 @@ class Parser
       e.printStackTrace();
     }
 
+    update();
+  } 
+  
+  public void update()
+  {
+    minLen = new Vector(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE); 
+    maxLen = new Vector(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE); 
+    
+    for (Triangle t: triangleList)
+    {
+       updateMinMaxLen(t); 
+    }
+    
     objectLen = new Vector(maxLen.getData());
     objectLen.minus(minLen);
-
+    
     // sortiert die liste nach z values
     Collections.sort(triangleList, new TriangleComparator());
-
+    
     boxer.update();
-  } 
+  }
 
   public int getListSize()
   {
@@ -96,19 +107,19 @@ class Parser
 
   public void printReport()
   {
-    println("Parser Report:");
-    println("  min: " + minLen.toString());
-    println("  max: " + maxLen.toString());
-    println("  len: " + objectLen.toString());
+    debug.println("Parser Report:");
+    debug.println("  min: " + minLen.toString());
+    debug.println("  max: " + maxLen.toString());
+    debug.println("  len: " + objectLen.toString());
   };
 
   public void printTriangles()
   {
-    println("Found " + triangleList.size() + " Triangles"); 
+    debug.println("Found " + triangleList.size() + " Triangles"); 
 
     for (int i = 0; i < triangleList.size(); i++) 
     {
-      println(i + ":");
+      debug.println(i + ":");
 
       triangleList.get(i).toTerminal();
     }
@@ -125,6 +136,15 @@ class Parser
 
     minLen.z = min(minLen.z, t.getMinZ());
     maxLen.z = max(maxLen.z, t.getMaxZ());
+  }
+
+  void rotate()
+  {
+    for (Triangle t: triangleList)
+    {
+      t.rotate();
+    }
+    update();
   }
 }
 

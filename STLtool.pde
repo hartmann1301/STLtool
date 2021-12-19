@@ -1,7 +1,9 @@
 String slicerVersion = "slicer 0.1";
 
-import java.util.Collections;
-import java.util.Comparator;
+//import java.util.Collections;
+//import java.util.Comparator;
+
+import java.util.*;
 import controlP5.*;
 
 boolean setupDone = false;
@@ -11,32 +13,22 @@ void setup()
   //fullScreen(P3D);
   smooth();
 
+  debug.init();
+  debug.print(slicerVersion);
+
   cp5 = new ControlP5(this);
   gui.init();
 
   drawMonitor.setFrameRate(30);  
-
-  background(0); // Set background to black
-
-  println(slicerVersion);
-  textSize(20);
-  text(slicerVersion, 0, 20);
-
-
-  //parser.loadFile("eve.stl");
-  parser.loadFile("stl-examples/abstaktT.stl");
-  //parser.loadFile("stl-examples/owl.stl");
+  
+  parser.loadFile("stl-examples/cube03.stl");
+  //parser.loadFile("stl-examples/abstaktT.stl");
+  //parser.loadFile("stl-examples/eve.stl");
+  //parser.loadFile("C:/Users/Thomas/Downloads/Ape50Kennzeichen.stl");
 
   //parser.printTriangles();
   parser.printReport();
-
   boxer.printReport();
-
-  data.loadParsedTriangles();
-
-  fastData.calc();
-
-  //calcLines();
 
   println("done with setup");
   setupDone = true;
@@ -46,9 +38,8 @@ void draw()
 {
   if (focused == false)
     return;
-  
+
   background(0);  // Set background to black  
-  text(slicerVersion, 10, 20, 0); 
 
   drawMonitor.start();  
 
@@ -67,14 +58,14 @@ class DrawMonitor
 {
   int sollFrames = 0;
   long timeStart, timeElapsed;
-  float percent = 0;
-  float percentAvarage = 0;
+  float busy = 0;
+  float busyAvarage = 0;
 
   void setFrameRate(int f)
   {
     sollFrames = f;
     frameRate(f);
-    gui.framesSlider.setMax(f + 1);
+    gui.sliderFrames.setMax(f + 1);
   }
 
   void start()
@@ -86,13 +77,13 @@ class DrawMonitor
   {
     timeElapsed = System.nanoTime() - timeStart;
 
-    percent = (((timeElapsed / 1000) * sollFrames) / 1000) / 10;
+    busy = (((timeElapsed / 1000) * sollFrames) / 1000) / 10;
 
-    //println(((float) (timeElapsed/1000) / 1000) + "ms -> * frameRate:" + frameRate + " = " + percent);
+    //println(((float) (timeElapsed/1000) / 1000) + "ms -> * frameRate:" + frameRate + " = " + busy);
 
-    percentAvarage = percentAvarage * 0.9 + percent * 0.1;
+    busyAvarage = busyAvarage * 0.95 + busy * 0.05;
 
     cp5.getController("frames").setValue(frameRate);
-    cp5.getController("percent").setValue(percentAvarage);
+    cp5.getController("busy").setValue(busyAvarage);
   }
 }

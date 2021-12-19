@@ -15,7 +15,7 @@ class Boxer
 
     sliceFaktor = f;
 
-    //println("changed sliceFaktor to: " + sliceFaktor);
+    //debug.println("changed sliceFaktor to: " + sliceFaktor);
 
     update();
   }
@@ -26,8 +26,6 @@ class Boxer
       return;
 
     scaleFaktor = f;
-
-    println("changed scaleFaktor to: " + scaleFaktor);
 
     update();
   }
@@ -48,6 +46,9 @@ class Boxer
   void update()
   {
     updateLenVectors();
+
+    data.update();
+    
     updateGui();
   }
 
@@ -69,17 +70,26 @@ class Boxer
 
   private void updateGui()
   {
-    gui.previewRowsSlider.setRange(1, objectSlices.z + 1);
-    gui.previewRowsSlider.setValue(objectSlices.z + 1);
-    gui.previewRowsSlider.setDecimalPrecision(1);
-    //gui.previewRowsSlider.setNumberOfTickMarks(objectSlices.z + 1);
+    gui.sliderRows.setRange(1, objectSlices.z + 1);
+    gui.sliderRows.setValue(objectSlices.z + 1);
+
+    gui.lableSlices.setText(data.axisLength.toString());
+    gui.lableDimensions.setText(getObjectLenString());
+    
+    previewStyle(int(gui.previewStylesList.getValue()));
+  }
+
+  String getObjectLenString()
+  {
+    final int d = 1; 
+    return "x:" + nf(objectLen.x, 0, d) + " * y:" +  nf(objectLen.y, 0, d) + " * z:" +  nf(objectLen.z, 0, d) + "mm";
   }
 
   public void printReport()
   {
-    println("Boxer Report:");
-    println("  min: " + minLen.toString());
-    println("  max: " + maxLen.toString());
-    println("  len: " + objectSlices.toString());
+    debug.println("Boxer Report:");
+    debug.println("  min: " + minLen.toString());
+    debug.println("  max: " + maxLen.toString());
+    debug.println("  len: " + objectSlices.toString());
   };
 }

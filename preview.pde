@@ -29,25 +29,25 @@ class Preview
     stroke(255);
     lights();
 
-    if (gui.checkbox.getArrayValue()[checkBoxes.coordinateSystem] == On)
+    if (gui.checkbox.getArrayValue()[CheckBoxes.coordinateSystem] == On)
     {
       drawCoordinateSystem();
     }
 
-    if (gui.checkbox.getArrayValue()[checkBoxes.arrayBox] == On)
+    if (gui.checkbox.getArrayValue()[CheckBoxes.arrayBox] == On)
     {
       drawArrayBox();
     }
 
-    switch((int) gui.previewTypeList.getValue()) 
+    switch((int) gui.previewStylesList.getValue()) 
     {
-    case 0: 
+    case PreviewStyles.originalSTL: 
       drawParsedTriangles();
       break;
-    case 1: 
+    case PreviewStyles.arrayOfBoxes: 
       drawRawData();
       break;
-    case 2: 
+    case PreviewStyles.optimizedBoxes: 
       fastData.draw();
       break;
     default:
@@ -67,7 +67,7 @@ class Preview
     // default camera height: (height/2.0) / tan(PI*30.0 / 180.0) => (height/2.0) * 0,577 
     float cameraOffsetZ = (height/2.0) / tan(PI*30.0 / 180.0);
 
-    float defaultPosition = cameraOffsetZ - (maxDimension + 50);
+    float defaultPosition = cameraOffsetZ - (maxDimension + 100);
 
     // maybe zoom in or out
     defaultPosition += zoom;
@@ -77,7 +77,7 @@ class Preview
 
   private void rotatePreview()
   {
-    if (gui.checkbox.getArrayValue()[checkBoxes.autoRotation] == On)
+    if (gui.checkbox.getArrayValue()[CheckBoxes.autoRotation] == On)
     {
        gui.changeCameraAngleX(1);
     }
@@ -129,7 +129,7 @@ class Preview
       {
         for (int z = 0; z < data.axisLength.z - 1; z++)
         {
-          if (rows < z)
+          if (int(gui.sliderRows.getValue()) < z)
             continue;
 
           BitStatus s = data.getPoint(x, y, z);
@@ -157,7 +157,7 @@ class Preview
 
     color fillColor = 0;
 
-    if (rows == zPos)
+    if (int(gui.sliderRows.getValue()) == zPos)
     {
       s = BitStatus.UNKNOWN;
     }
@@ -207,9 +207,12 @@ class Preview
 
   void drawParsedTriangles()
   {   
+    float s = boxer.sliceFaktor;
+    translate(s / 2, s / 2, s / 2);
+
     for (Triangle t : parser.triangleList)
     {
-      if (rows < t.getMinZ())
+      if (int(gui.sliderRows.getValue()) < t.getMinZ())
         continue;
 
       // im data array werden die werte schon ohne minLen abgelegt
@@ -217,10 +220,12 @@ class Preview
       float yMin = parser.minLen.y;
       float zMin = parser.minLen.z;
 
+      float f = boxer.scaleFaktor;
+
       beginShape();
-      vertex(t.p1.x - xMin, t.p1.y - yMin, t.p1.z - zMin);
-      vertex(t.p2.x - xMin, t.p2.y - yMin, t.p2.z - zMin);
-      vertex(t.p3.x - xMin, t.p3.y - yMin, t.p3.z - zMin);     
+      vertex((t.p1.x - xMin) * f, (t.p1.y - yMin) * f, (t.p1.z - zMin) * f);
+      vertex((t.p2.x - xMin) * f, (t.p2.y - yMin) * f, (t.p2.z - zMin) * f);
+      vertex((t.p3.x - xMin) * f, (t.p3.y - yMin) * f, (t.p3.z - zMin) * f);
       endShape();
     }
   }
@@ -251,12 +256,6 @@ class Preview
     popStyle();
   }
   
-  void drawObjectLenString()
-  {
-    // TODO do a better format
-    text(boxer.objectLen.toString() + " mm", 0, 20);
-  }
-  
   void drawArrayBox()
   {
     pushStyle();
@@ -268,14 +267,6 @@ class Preview
     float f = boxer.sliceFaktor;
 
     translate(-f / 2, -f / 2, -f / 2);
-
-    pushMatrix();
-    rotateZ(radians(90));
-    rotateX(radians(-90));
-    textSize(5);
-    text(data.axisLength.toString(), 0, 10);
-    drawObjectLenString();
-    popMatrix();
 
     int xLen = data.axisLength.x;
     int yLen = data.axisLength.y;

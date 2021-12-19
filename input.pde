@@ -28,31 +28,24 @@ void mouseReleased() {
 
 //void keyTyped() {
 void keyPressed() {
-  switch(key) {
-    case('1'):
-    preview.zoom += 10;
-    break;
-    case('2'):
-    preview.zoom -= 10;
-    break;
-    case('o'):
-    rows += 1;   
-    break;
-    case('p'):
-    rows -= 1;
+  switch(keyCode) {
+    case(LEFT):
+    case(RIGHT):
+    case(UP):
+    case(DOWN):
+    // global key class will be checked again in rotate() functions
+    //debug.println("rotate " + keyCode);   
+    parser.rotate();
     break;
   }
 
-  final float step = 10;
-
-  if (keyCode == LEFT) {
-    gui.changeCameraAngleX(step);
-  } else if (keyCode == RIGHT) {
-    gui.changeCameraAngleX(-step);
-  } else if (keyCode == UP) {
-    gui.changeCameraAngleY(step);
-  } else if (keyCode == DOWN) {
-    gui.changeCameraAngleY(-step);
+  switch(key) {
+    case('+'):
+    gui.sliderRows.setValue(gui.sliderRows.getValue() + 1);
+    break;
+    case('-'):
+    gui.sliderRows.setValue(gui.sliderRows.getValue() - 1);
+    break;
   }
 }
 

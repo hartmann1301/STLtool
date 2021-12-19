@@ -81,6 +81,13 @@ public class Triangle {
       swapP1P2();
   }
 
+  void rotate()
+  {
+    p1.rotate();
+    p2.rotate();
+    p3.rotate();
+  }
+
   void minus(Vector p)
   {
     p1.minus(p);

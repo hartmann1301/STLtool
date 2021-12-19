@@ -6,6 +6,13 @@ class FastData
 {
   FastData()
   {
+    // create a dictionary to print the entrys
+    dataLables.add(" x:");
+    dataLables.add(", y:");
+    dataLables.add(", z:");
+    dataLables.add(", xLen:");
+    dataLables.add(", yLen:");
+    dataLables.add(", zLen:");
   }
 
   private static final int X_POS = 0;
@@ -15,23 +22,24 @@ class FastData
   private static final int Y_LEN = 4;
   private static final int Z_LEN = 5;  
 
+  private ArrayList<String> dataLables = new ArrayList<String>();
+
   ArrayList<ArrayList<Integer>> drawData = new ArrayList<ArrayList<Integer>>();
 
-  public void calc()
+  public void update()
   {
-    boolean printEntrys = false;
-
     createPixelsAndLines();
 
-    printToTerminal(printEntrys);
+    //printDataSize();
 
     optimizeDirectionY();
 
-    printToTerminal(printEntrys);
+    //printDataSize();
 
     optimizeDirectionZ();
 
-    printToTerminal(printEntrys);
+    //printDataSize();
+    //printData();
   }
 
   public void draw()
@@ -75,7 +83,8 @@ class FastData
         zPos += (zLen - 1) / 2;
       }
 
-      if (rows < zPos)
+      // warning the -1 is a bad workaround because without it the was a bug after rotation
+      if (int(gui.sliderRows.getValue()) < zPos - 1)
         continue;
 
       final int grayTone = 200;
@@ -154,10 +163,12 @@ class FastData
       if (entry.size() > 3 && last.size() > 3)
       {
         // check for same ecpect the y pos
-        if (entry.get(X_POS) == last.get(X_POS) &&
-          entry.get(Y_POS) == last.get(Y_POS) - 1 &&
-          entry.get(Z_POS) == last.get(Z_POS) &&
-          entry.get(X_LEN) == last.get(X_LEN))          
+        if (
+          int(entry.get(X_POS)) == int(last.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(last.get(Y_POS) - 1) &&
+          int(entry.get(Z_POS)) == int(last.get(Z_POS)) &&
+          int(entry.get(X_LEN)) == int(last.get(X_LEN))
+          )
         {
           // remove the last one
           drawData.remove(i + 1);
@@ -172,8 +183,28 @@ class FastData
         }
       }
       // pixels in y direction to lines
-      else if (entry.size() == 3 && last.size() == 3)
+      else if (entry.size() > 2 && last.size() > 2)
       {
+        // check for same ecpect the y pos
+        if (
+          int(entry.get(X_POS)) == int(last.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(last.get(Y_POS) - 1) &&
+          int(entry.get(Z_POS)) == int(last.get(Z_POS))
+          )
+        {
+          // remove the last one
+          drawData.remove(i + 1);
+
+          int yLen = 2;
+
+          // if last was already a line increase its width
+          if (last.size() == 5)
+            yLen = last.get(Y_LEN) + 1;
+
+          // add an xLen 1
+          entry.add(1);  
+          entry.add(yLen);
+        }    
       }
 
       // create a deep copy for next loop
@@ -197,8 +228,6 @@ class FastData
       //print(i + " - ");
       //printEntry(entry);
 
-      ArrayList<Integer> check = new ArrayList<Integer>();
-
       int matchCnt = 0;
 
       boolean skipThis = false;
@@ -215,9 +244,10 @@ class FastData
       {
         //println("  remove This");
         drawData.remove(i);
-
         continue;
       }
+
+      ArrayList<Integer> check = new ArrayList<Integer>();
 
       // find entrys with same z
       for (int j = i - 1; j >= 0; j--) {
@@ -226,15 +256,53 @@ class FastData
 
         //println("compare " + entry.get(Z_POS) + " with " + (check.get(Z_POS) - 1));
 
-        if (entry.size() >= 5 && 
-          check.size() >= 5 && 
-          entry.get(X_POS) == check.get(X_POS) &&
-          entry.get(Y_POS) == check.get(Y_POS) &&
-          entry.get(Z_POS) == (check.get(Z_POS) + 1) &&
-          entry.get(X_LEN) == check.get(X_LEN) &&
-          entry.get(Y_LEN) == check.get(Y_LEN))   
+        boolean foundMatch = false;
+
+        if (
+          int(entry.size()) == 5 && 
+          int(check.size()) == 5 && 
+          int(entry.get(X_POS)) == int(check.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(check.get(Y_POS)) &&
+          int(entry.get(Z_POS)) == int(check.get(Z_POS) + 1) &&
+          int(entry.get(X_LEN)) == int(check.get(X_LEN)) &&
+          int(entry.get(Y_LEN)) == int(check.get(Y_LEN))
+          )   
         {
-          // found a match, manipulate z of entry minus one
+          foundMatch = true;
+        }
+        else if (
+          int(entry.size()) == 4 && 
+          int(check.size()) == 4 && 
+          int(entry.get(X_POS)) == int(check.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(check.get(Y_POS)) &&
+          int(entry.get(Z_POS)) == int(check.get(Z_POS) + 1) &&
+          int(entry.get(X_LEN)) == int(check.get(X_LEN))
+          )
+        {
+          foundMatch = true;
+          
+          // add yLen of 1
+          entry.add(1);
+        }
+
+        else if (
+          int(entry.size()) == 3 && 
+          int(check.size()) == 3 && 
+          int(entry.get(X_POS)) == int(check.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(check.get(Y_POS)) &&
+          int(entry.get(Z_POS)) == int(check.get(Z_POS) + 1)
+          )
+        {
+          foundMatch = true;
+
+          // add xLen und yLen of 1
+          entry.add(1);
+          entry.add(1);
+        }
+
+        if (foundMatch)
+        {
+          // manipulate z of entry minus one
           entry.set(Z_POS, entry.get(Z_POS) - 1);
 
           deleteList.add(j);
@@ -247,52 +315,35 @@ class FastData
         //println("  matchCnt " + matchCnt); 
         entry.add(matchCnt + 1);
       }
-
-      //print(i + " -- ");
-      //printEntry(entry);
     }
   }
 
   /*
-  private void printEntry(ArrayList<Integer> entry)
-   {
-   ArrayList<String> dict = new ArrayList<String>();
-   dict.add(" x:");
-   dict.add(", y:");
-   dict.add(", z:");
-   dict.add(", xLen:");
-   dict.add(", yLen:");
-   dict.add(", zLen:");
-   
-   for (int i = 0; i < entry.size(); i++)
-   {
-   print(dict.get(i) + entry.get(i));
-   }
-   println();
-   }
-   */
-
-  private void printToTerminal(boolean printEntrys)
+  private void printDataSize()
   {
-    println("fastDrawArray with len:" + drawData.size());
+    debug.println("drawData.size(): " + drawData.size());
+  }
+  
+  private void printEntry(ArrayList<Integer> entry)
+  {
+    for (int i = 0; i < entry.size(); i++)
+    {
+      debug.print(dataLables.get(i) + entry.get(i));
+    }
+    debug.println();
+  }
 
-    if (printEntrys == false)
-      return;
+  private void printData()
+  {
+    printDataSize();
 
-    ArrayList<String> dict = new ArrayList<String>();
-    dict.add(" x:");
-    dict.add(", y:");
-    dict.add(", z:");
-    dict.add(", xLen:");
-    dict.add(", yLen:");
-    dict.add(", zLen:");
     for (ArrayList<Integer> entry : drawData)
     {
-      for (int i = 0; i < entry.size(); i++)
-      {
-        print(dict.get(i) + entry.get(i));
-      }
-      println();
+      printEntry(entry);
     }
+
+    debug.println();
   }
+  */
+
 };

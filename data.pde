@@ -3,14 +3,21 @@ Data data = new Data();
 class Data
 {
   byte[][][] data;
-  long setPixelsCounter = 0;
   IntV3 axisLength = new IntV3();
   ArrayList<IntV3> fillStack = new ArrayList<IntV3>();
-  long fillCounter = 0;
+  
+  long cntShell, cntInside, cntOutside;
 
   long getArrayPixels()
   {
     return axisLength.x * axisLength.y * axisLength.z;
+  }
+
+  void update()
+  {
+    loadParsedTriangles();
+    
+    fastData.update();
   }
 
   void loadParsedTriangles()
@@ -35,14 +42,17 @@ class Data
     //  data = new byte[x][y/4][z];
     data = new byte[x][y][z];
 
-    //Arrays.fill(data, 0);
+    // the counter will be counted in the addParserTriangles() function
+    cntShell = 0;
 
     // do the actual calculation of all points
     addParserTriangles();
 
-    println("Set " + setPixelsCounter + " Shell of " + getArrayPixels() + " Pixels as Shell");
+    println("Set " + cntShell + " Shell of " + getArrayPixels() + " Pixels as Shell");
 
     fillWithBoxes();
+    
+    //boxer.updateGui();
   }
 
   private void fillWithBoxes()
@@ -53,7 +63,7 @@ class Data
     addToStack(0, 0, 0);
 
     // fill the outside
-    fillCounter = 0;
+    cntOutside = 1;
     while (fillStack.size() > 0)
     {
       ArrayList<IntV3> tempStack = new ArrayList<IntV3>(fillStack);    
@@ -74,10 +84,10 @@ class Data
       //println("fillStack.size: " + fillStack.size());
     }
 
-    println("put " + fillCounter + " boxes around Object");
+    println("put " + cntOutside + " boxes around Object");
 
     // fill the inside
-    fillCounter = 0;
+    cntInside = 0;
     for (int x = 0; x < axisLength.x; x++)
     {
       for (int y = 0; y < axisLength.y; y++)
@@ -87,13 +97,13 @@ class Data
           if (BitStatus.UNKNOWN == getPoint(x, y, z))
           {
             setPoint(BitStatus.INSIDE, x, y, z);
-            fillCounter++;
+            cntInside++;
           }
         }
       }
     }
 
-    println("filled Object with: " + fillCounter + " boxes");
+    println("filled Object with: " + cntInside + " boxes");
   }
 
   private void addToStack(int x, int y, int z)
@@ -113,7 +123,7 @@ class Data
 
     setPoint(BitStatus.OUTSIDE, x, y, z);
 
-    fillCounter++;
+    cntOutside++;
 
     IntV3 p = new IntV3(x, y, z);
 
@@ -257,7 +267,7 @@ class Data
     }
 
     // count the defined pixels in array
-    setPixelsCounter += 1;
+    cntShell += 1;
 
     setPoint(BitStatus.SHELL, x, y, z);
   }
