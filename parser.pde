@@ -7,18 +7,57 @@ class Parser
 
   private ArrayList<Triangle> triangleList;
 
-  public void loadFile(String fileName) 
+  public void loadFile(String filePath) 
   {
-    //Open the file from the createWriter() example
-    BufferedReader reader = createReader(fileName);
-    String line = null;
+    // create a new empty triangles list
+    triangleList = new ArrayList<Triangle>();      
 
-    minLen = new Vector(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE); 
-    maxLen = new Vector(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE); 
+    if (isASCIICheck(filePath))
+    {
+      loadASCIIFile(filePath);
+    } else
+    {
+      loadBinaryFile(filePath);
+    }
 
-    triangleList = new ArrayList<Triangle>();    
+    update();
+  }
+
+  private boolean isASCIICheck(String filePath) 
+  {
+    boolean isASCII = false;
 
     try {
+      //Open the file from the createWriter() example
+      BufferedReader reader = createReader(filePath);
+
+      char[] array = new char[80];
+
+      // read first 80 bytes of the header
+      int cnt = reader.read(array, 0, array.length);
+
+      String header = new String(array, 0, cnt);
+
+      String[] pieces = split(header, " ");
+
+      isASCII = pieces[0].equals("solid");
+
+      reader.close();
+    } 
+    catch(IOException e) {
+      e.printStackTrace();
+    }   
+
+    return isASCII;
+  }
+
+  public void loadASCIIFile(String filePath) 
+  {
+    try {
+      //Open the file from the createWriter() example
+      BufferedReader reader = createReader(filePath);
+      String line = null;
+
       ParseToken p = ParseToken.NONE;
 
       Triangle tempTriangle = new Triangle();
@@ -57,10 +96,6 @@ class Parser
           Triangle newTriangle = new Triangle(tempTriangle);
 
           triangleList.add(newTriangle);
-
-          //newTriangle.toTerminal();
-
-          //debug.println("end triangle");
           break;
         }
       }
@@ -69,26 +104,64 @@ class Parser
     catch(IOException e) {
       e.printStackTrace();
     }
-
-    update();
   } 
-  
+
+  public void loadBinaryFile(String fileName) 
+  {
+    try {
+      DataInputStream stream = new DataInputStream(new FileInputStream(fileName));
+
+      // skip header
+      byte[] header = new byte[80];
+      stream.read(header);
+      
+      // do not use this number now
+      Integer.reverseBytes(stream.readInt());
+
+      while (stream.available() > 0 ) {
+        float[] normal = new float[3];
+        for (int i = 0; i < normal.length; i++) {
+          normal[i] = Float.intBitsToFloat(Integer.reverseBytes(stream.readInt()));
+        }   
+
+        Vector[] vectors = new Vector[3];
+        for (int i = 0; i < vectors.length; i++) {
+          float[] values = new float[3];
+          for (int d = 0; d < values.length; d++) {
+            values[d] = Float.intBitsToFloat(Integer.reverseBytes(stream.readInt()));
+          }
+          vectors[i] = new Vector(values[0], values[1], values[2]);
+        }
+
+        // those two bytes should always be zeros
+        Short.reverseBytes(stream.readShort()); // not used (yet)
+
+        triangleList.add(new Triangle(vectors[0], vectors[1], vectors[2]));
+      }
+
+      stream.close();
+    } 
+    catch(IOException e) {
+      e.printStackTrace();
+    }
+  } 
+
   public void update()
   {
     minLen = new Vector(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE); 
     maxLen = new Vector(-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE); 
-    
-    for (Triangle t: triangleList)
+
+    for (Triangle t : triangleList)
     {
-       updateMinMaxLen(t); 
+      updateMinMaxLen(t);
     }
-    
+
     objectLen = new Vector(maxLen.getData());
     objectLen.minus(minLen);
-    
+
     // sortiert die liste nach z values
     Collections.sort(triangleList, new TriangleComparator());
-    
+
     boxer.update();
   }
 
@@ -140,7 +213,7 @@ class Parser
 
   void rotate()
   {
-    for (Triangle t: triangleList)
+    for (Triangle t : triangleList)
     {
       t.rotate();
     }

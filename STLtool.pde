@@ -3,8 +3,10 @@ String slicerVersion = "slicer 0.1";
 //import java.util.Collections;
 //import java.util.Comparator;
 
+import java.io.*;
 import java.util.*;
 import controlP5.*;
+
 
 boolean setupDone = false;
 void setup() 
@@ -21,14 +23,14 @@ void setup()
 
   drawMonitor.setFrameRate(30);  
   
-  parser.loadFile("stl-examples/cube03.stl");
-  //parser.loadFile("stl-examples/abstaktT.stl");
-  //parser.loadFile("stl-examples/eve.stl");
+  //parser.loadFile(sketchPath() + "/stl-examples/cube03.stl");
+  parser.loadFile(sketchPath() + "/stl-examples/foxBin.stl");
+  //parser.loadFile(sketchPath() + "/stl-examples/foxAscii.stl");
   //parser.loadFile("C:/Users/Thomas/Downloads/Ape50Kennzeichen.stl");
 
   //parser.printTriangles();
-  parser.printReport();
-  boxer.printReport();
+  //parser.printReport();
+  //boxer.printReport();
 
   println("done with setup");
   setupDone = true;
