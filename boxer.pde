@@ -7,6 +7,7 @@ class Boxer
 
   private float sliceFaktor = 1.0;
   private float scaleFaktor = 1.0;
+  private float boxFaktor = 1.0;
 
   public void setSliceFaktor(float f)
   {
@@ -36,9 +37,8 @@ class Boxer
 
     temp.minus(parser.minLen);
 
-    temp.multiply(scaleFaktor);
-
-    temp.divide(sliceFaktor);
+    // do all in one, this is way faster
+    temp.multiply((scaleFaktor * boxFaktor) / sliceFaktor);
 
     return temp;
   }  
@@ -66,6 +66,11 @@ class Boxer
     objectSlices.multiply(scaleFaktor);
 
     objectSlices.divide(sliceFaktor);
+    
+    // because instead of a point a box is placed
+    float max = objectLen.getMaxValue();
+    boxFaktor = (max - 1)/ max; 
+    //println("set Boxfaktor to: " + boxFaktor);
   }
 
   private void updateGui()

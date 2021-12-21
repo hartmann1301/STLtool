@@ -42,7 +42,7 @@ class Preview
     switch((int) gui.previewStylesList.getValue()) 
     {
     case PreviewStyles.originalSTL: 
-      drawParsedTriangles();
+      drawOriginalSTL();
       break;
     case PreviewStyles.arrayOfBoxes: 
       drawRawData();
@@ -79,7 +79,7 @@ class Preview
   {
     if (gui.checkbox.getArrayValue()[CheckBoxes.autoRotation] == On)
     {
-       gui.changeCameraAngleX(1);
+      gui.changeCameraAngleX(1);
     }
 
     //dann kann um z gedreht werden um das objekt zu zeigen
@@ -176,7 +176,7 @@ class Preview
       fillColor = color(255, 255, 255, 20); // is not painted anyways 
       break;
     }
-    
+
     color strokeColor = color(255, 255, 255);   
     drawBox(strokeColor, fillColor, xPos, yPos, zPos, xLen, yLen, zLen);
   }
@@ -185,10 +185,10 @@ class Preview
   {
     pushMatrix();
     pushStyle();
-    
+
     stroke(s);
     fill(f);
-    
+
     // hier werden die werte zurückgerechnet
     final float fak = boxer.sliceFaktor;
     xPos *= fak;
@@ -197,22 +197,23 @@ class Preview
     xLen *= fak;
     yLen *= fak;
     zLen *= fak;      
-    
+
+    // move one half slice back, because box drawn centered 
+    float offset = fak * -0.5;
+    translate(offset, offset,  offset);
+
     translate(xPos, yPos, zPos);
     box(xLen, yLen, zLen);
 
     popStyle();
-    popMatrix();  
+    popMatrix();
   }
 
-  void drawParsedTriangles()
+  void drawOriginalSTL()
   {   
-    float s = boxer.sliceFaktor;
-    translate(s / 2, s / 2, s / 2);
-
     for (Triangle t : parser.triangleList)
     {
-      if (int(gui.sliderRows.getValue()) < t.getMinZ())
+      if (int(gui.sliderRows.getValue() * gui.sliderSlices.getValue()) < t.getMinZ())
         continue;
 
       // im data array werden die werte schon ohne minLen abgelegt
@@ -255,7 +256,7 @@ class Preview
     popMatrix();
     popStyle();
   }
-  
+
   void drawArrayBox()
   {
     pushStyle();
@@ -263,10 +264,11 @@ class Preview
 
     stroke(stdColor.white);
     noFill();
-    
+
     float f = boxer.sliceFaktor;
 
-    translate(-f / 2, -f / 2, -f / 2);
+    // move one slice back because the object is centered in array + 2    
+    translate(-f, -f, -f);
 
     int xLen = data.axisLength.x;
     int yLen = data.axisLength.y;
@@ -275,13 +277,13 @@ class Preview
     for (int i = 1; i < xLen; i++)
     {
       float xOffset = i * f;
-      line(xOffset, 0, 0, xOffset, float(yLen) * f, 0);  
+      line(xOffset, 0, 0, xOffset, float(yLen) * f, 0);
     }
 
     for (int i = 1; i < yLen; i++)
     {
       float yOffset = i * f;
-      line(0, yOffset, 0, float(xLen) * f, yOffset, 0);  
+      line(0, yOffset, 0, float(xLen) * f, yOffset, 0);
     }
 
     Vector origin = new Vector(xLen, yLen, zLen); 

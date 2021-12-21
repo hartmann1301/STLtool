@@ -34,7 +34,7 @@ class Data
 
     axisLength =  new IntV3(x, y, z);
 
-    println("allocate 2bit array[" + x + "][" +  y + "][" + z + "]");
+    //println("allocate 2bit array[" + x + "][" +  y + "][" + z + "]");
 
     // not sure if this is needed
     data = null;
@@ -48,7 +48,7 @@ class Data
     // do the actual calculation of all points
     addParserTriangles();
 
-    println("Set " + cntShell + " Shell of " + getArrayPixels() + " Pixels as Shell");
+    //println("Set " + cntShell + " Shell of " + getArrayPixels() + " Pixels as Shell");
 
     fillWithBoxes();
     
@@ -84,7 +84,7 @@ class Data
       //println("fillStack.size: " + fillStack.size());
     }
 
-    println("put " + cntOutside + " boxes around Object");
+    //println("put " + cntOutside + " boxes around Object");
 
     // fill the inside
     cntInside = 0;
@@ -103,7 +103,7 @@ class Data
       }
     }
 
-    println("filled Object with: " + cntInside + " boxes");
+    //println("filled Object with: " + cntInside + " boxes");
   }
 
   private void addToStack(int x, int y, int z)

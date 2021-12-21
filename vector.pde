@@ -85,7 +85,7 @@ class Vector
     if (f == 0)
     {
       println("Error: Divide Vector by 0!");
-      return;     
+      return;
     }
 
     x /= f;
@@ -96,7 +96,7 @@ class Vector
   void rotate()
   {
     float temp;
-    
+
     switch (keyCode)
     {
     case LEFT:
@@ -125,6 +125,11 @@ class Vector
   Vector getData()
   {
     return new Vector(x, y, z);
+  }
+
+  float getMaxValue()
+  {
+    return max(x, y, z);
   }
 
   String toString() 
