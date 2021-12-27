@@ -114,7 +114,7 @@ class Parser
       // skip header
       byte[] header = new byte[80];
       stream.read(header);
-      
+
       // do not use this number now
       Integer.reverseBytes(stream.readInt());
 
@@ -178,24 +178,22 @@ class Parser
     return triangleList.get(i);
   }
 
-  public void printReport()
+  float getRadiusMaxXY()
   {
-    debug.println("Parser Report:");
-    debug.println("  min: " + minLen.toString());
-    debug.println("  max: " + maxLen.toString());
-    debug.println("  len: " + objectLen.toString());
-  };
+    // the centerpoint is half of objectLen, z will be ignored    
+    Vector offset = new Vector(objectLen.getData());
+    offset.multiply(0.5);
+    offset.plus(minLen);
 
-  public void printTriangles()
-  {
-    debug.println("Found " + triangleList.size() + " Triangles"); 
+    //println("offset: " + offset.toString());
 
-    for (int i = 0; i < triangleList.size(); i++) 
-    {
-      debug.println(i + ":");
-
-      triangleList.get(i).toTerminal();
+    float r = 0;
+    for (Triangle t : triangleList)
+    {      
+      r = max(r, t.getRadiusMaxXY(offset));
     }
+
+    return r;
   }
 
   // private
@@ -218,6 +216,26 @@ class Parser
       t.rotate();
     }
     update();
+  }
+
+  public void printReport()
+  {
+    debug.println("Parser Report:");
+    debug.println("  min: " + minLen.toString());
+    debug.println("  max: " + maxLen.toString());
+    debug.println("  len: " + objectLen.toString());
+  };
+
+  public void printTriangles()
+  {
+    debug.println("Found " + triangleList.size() + " Triangles"); 
+
+    for (int i = 0; i < triangleList.size(); i++) 
+    {
+      debug.println(i + ":");
+
+      triangleList.get(i).toTerminal();
+    }
   }
 }
 

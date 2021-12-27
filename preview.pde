@@ -50,6 +50,10 @@ class Preview
     case PreviewStyles.optimizedBoxes: 
       fastData.draw();
       break;
+    case PreviewStyles.concentric: 
+      zylinder.draw();
+      break;
+      
     default:
       println("Error unknown preview type");
       break;
@@ -200,7 +204,7 @@ class Preview
 
     // move one half slice back, because box drawn centered 
     float offset = fak * -0.5;
-    translate(offset, offset,  offset);
+    translate(offset, offset, offset);
 
     translate(xPos, yPos, zPos);
     box(xLen, yLen, zLen);
@@ -213,7 +217,8 @@ class Preview
   {   
     for (Triangle t : parser.triangleList)
     {
-      if (int(gui.sliderRows.getValue() * gui.sliderSlices.getValue()) < t.getMinZ())
+      // WARNING: this might not be 100% correct
+      if (gui.sliderRows.getValue() < t.getMinZ() * gui.sliderScale.getValue() - boxer.minLen.z)
         continue;
 
       // im data array werden die werte schon ohne minLen abgelegt

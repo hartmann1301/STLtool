@@ -16,6 +16,7 @@ static final class PreviewStyles
   static final int originalSTL = 0;
   static final int arrayOfBoxes = 1;
   static final int optimizedBoxes = 2;
+  static final int concentric = 3;
 }
 
 class GUI
@@ -28,7 +29,8 @@ class GUI
   List previewTypes = Arrays.asList(
     "orginal stl", 
     "array of boxes", 
-    "optimized boxes"
+    "optimized boxes",
+    "concentric"
     );
 
   Accordion accordion;
@@ -203,7 +205,7 @@ class GUI
     //cp5.addScrollableList("View Type")
     previewStylesList = cp5.addDropdownList("previewStyle")  
       .setPosition(width / 2 - sliderWidth / 2, gap)
-      .setSize(sliderWidth, sliderHeight * 4)
+      .setSize(sliderWidth, sliderHeight * (previewTypes.size() + 1))
       .setItemHeight(sliderHeight)
       .setBarHeight(sliderHeight)
       .addItems(previewTypes)
@@ -256,6 +258,10 @@ void previewStyle(int n)
   case PreviewStyles.optimizedBoxes: 
     s = "Optimized Boxes: " + fastData.drawData.size();
     break;
+  case PreviewStyles.concentric: 
+
+    break;    
+    
   }
   gui.lablePreviewInfo.setText(s);
 }
@@ -264,7 +270,7 @@ public void loadFile() {
   if (setupDone == false)
     return;
 
-  selectInput("Select a file to process:", "fileSelected");
+  selectInput("Select a file to process:", "fileSelected", sketchFile(sketchPath()));
 }
 
 void fileSelected(File selection) {

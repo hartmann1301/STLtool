@@ -109,6 +109,11 @@ public class Triangle {
     p3.divide(f);
   }
 
+  float getRadiusMaxXY(Vector offset)
+  {
+    return max(p1.getRadiusXY(offset), p2.getRadiusXY(offset), p3.getRadiusXY(offset));
+  }
+
   float getMinX() 
   {
     return min(p1.x, p2.x, p3.x);

@@ -24,7 +24,8 @@ void setup()
   drawMonitor.setFrameRate(30);  
   
   //parser.loadFile(sketchPath() + "/stl-examples/cube03.stl");
-  parser.loadFile(sketchPath() + "/stl-examples/foxBin.stl");
+  parser.loadFile(sketchPath() + "/stl-examples/ball12.stl");
+  //parser.loadFile(sketchPath() + "/stl-examples/foxBin.stl");
   //parser.loadFile(sketchPath() + "/stl-examples/foxAscii.stl");
   //parser.loadFile("C:/Users/Thomas/Downloads/Ape50Kennzeichen.stl");
 

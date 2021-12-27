@@ -8,6 +8,8 @@ class Boxer
   private float sliceFaktor = 1.0;
   private float scaleFaktor = 1.0;
   private float boxFaktor = 1.0;
+  
+  float radiusMaxXY = 0;
 
   public void setSliceFaktor(float f)
   {
@@ -47,7 +49,11 @@ class Boxer
   {
     updateLenVectors();
 
+    radiusMaxXY = parser.getRadiusMaxXY();
+
     data.update();
+   
+    zylinder.update();
     
     updateGui();
   }

@@ -66,6 +66,13 @@ class Vector
     z = p.z;
   }
 
+  void plus(Vector p)
+  {
+    x += p.x;
+    y += p.y;    
+    z += p.z;
+  }
+  
   void minus(Vector p)
   {
     x -= p.x;
@@ -130,6 +137,11 @@ class Vector
   float getMaxValue()
   {
     return max(x, y, z);
+  }
+
+  float getRadiusXY(Vector offset)
+  {
+    return new PVector(x - offset.x, y - offset.y, 0).mag();
   }
 
   String toString() 
