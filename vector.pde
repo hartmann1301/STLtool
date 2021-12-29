@@ -146,7 +146,13 @@ class Vector
 
   String toString() 
   {
-    return new String("x:" + x + ",  y:" + y + ",  z:" + z + " ");
+    return new String("x:" + x + ",  y:" + y + ",  z:" + z);
+  }
+
+  String toStringRounded() 
+  {
+    String f = new String("x:%.2f");
+    return new String("x:" + String.format(f, x) + ",  y:" + String.format(f, y) + ",  z:" + String.format(f, z));
   }
 
   float x, y, z;

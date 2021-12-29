@@ -2,10 +2,10 @@ Data data = new Data();
 
 class Data
 {
-  byte[][][] data;
+  byte[][][] byteArray;
   IntV3 axisLength = new IntV3();
   ArrayList<IntV3> fillStack = new ArrayList<IntV3>();
-  
+
   long cntShell, cntInside, cntOutside;
 
   long getArrayPixels()
@@ -15,13 +15,8 @@ class Data
 
   void update()
   {
-    loadParsedTriangles();
-    
-    fastData.update();
-  }
+    timeMonitor.startTask();
 
-  void loadParsedTriangles()
-  {
     // int() statt round() führt dazu, dass bei minuswerten die erste box abgeschnitten wird
     int x = round(boxer.objectSlices.x + 1);
     int y = round(boxer.objectSlices.y + 1);
@@ -34,13 +29,10 @@ class Data
 
     axisLength =  new IntV3(x, y, z);
 
-    //println("allocate 2bit array[" + x + "][" +  y + "][" + z + "]");
+    //println("allocate 2bit byteArray[" + x + "][" +  y + "][" + z + "]");
 
-    // not sure if this is needed
-    data = null;
-
-    //  data = new byte[x][y/4][z];
-    data = new byte[x][y][z];
+    //  byteArray = new byte[x][y/4][z];
+    byteArray = new byte[x][y][z];
 
     // the counter will be counted in the addParserTriangles() function
     cntShell = 0;
@@ -51,8 +43,8 @@ class Data
     //println("Set " + cntShell + " Shell of " + getArrayPixels() + " Pixels as Shell");
 
     fillWithBoxes();
-    
-    //boxer.updateGui();
+
+    timeMonitor.stopTask("update data");
   }
 
   private void fillWithBoxes()
@@ -255,7 +247,7 @@ class Data
   // must be private
   private void addPoint(int x, int y, int z)
   {
-    // add one extra to center object in plus 2 array
+    // add one extra to center object in plus 2 byteArray
     x += 1;
     y += 1;
     z += 1;
@@ -266,7 +258,7 @@ class Data
       return;
     }
 
-    // count the defined pixels in array
+    // count the defined pixels in byteArray
     cntShell += 1;
 
     setPoint(BitStatus.SHELL, x, y, z);
@@ -297,7 +289,7 @@ class Data
 
     // bitshifting
 
-    data[x][y][z] = newByte;
+    byteArray[x][y][z] = newByte;
   }
 
   public boolean isObject(int x, int y, int z)
@@ -309,19 +301,30 @@ class Data
 
   public BitStatus getPoint(IntV3 v)
   {
-    return getPoint(v.x, v.y, v.z);
+    return getPoint(v.x, v.y, v.z, true);
+  }
+
+  public BitStatus getPoint(IntV3 v, boolean printError)
+  {
+    return getPoint(v.x, v.y, v.z, printError);
   }
 
   public BitStatus getPoint(int x, int y, int z)
   {
+    return getPoint(x, y, z, true);
+  }
+
+  public BitStatus getPoint(int x, int y, int z, boolean printError)
+  {
     if (x >= axisLength.x || y >= axisLength.y || z >= axisLength.z || x < 0 || y < 0 || z < 0)
     {
-      println("Error: getPoint(x:" + x + ",  y:" + y + ",  z:" + z + ") axis: " + axisLength.toString());
+      if (printError)
+        debug.println("Error: getPoint(x:" + x + ",  y:" + y + ",  z:" + z + ") axis: " + axisLength.toString());
 
       return BitStatus.UNKNOWN;
     }
 
-    byte d = data[x][y][z];
+    byte d = byteArray[x][y][z];
 
     // do the bitshifting
 

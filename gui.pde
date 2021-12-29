@@ -9,6 +9,7 @@ static final class CheckBoxes
   static final int autoRotation = 0;
   static final int coordinateSystem = 1;
   static final int arrayBox = 2;
+  static final int concentricData = 3;
 }
 
 static final class PreviewStyles
@@ -86,12 +87,14 @@ class GUI
       .setColorBackground(stdColor.dark_red_1)
       .addItem("Auto Rotation", CheckBoxes.autoRotation)
       .addItem("Coordinate System", CheckBoxes.coordinateSystem)
-      .addItem("Array Box", CheckBoxes.arrayBox);
-
+      .addItem("Array Box", CheckBoxes.arrayBox)
+      .addItem("Concentric Data", CheckBoxes.concentricData);
+      
     // set default values
     checkbox.getItem(CheckBoxes.autoRotation).setValue(Off);
     checkbox.getItem(CheckBoxes.coordinateSystem).setValue(On);
     checkbox.getItem(CheckBoxes.arrayBox).setValue(On);
+    checkbox.getItem(CheckBoxes.concentricData).setValue(Off);
 
     // groupCamera
     final color accBCcolor = color(255, 50);
@@ -161,12 +164,13 @@ class GUI
       .setBarHeight(sliderHeight);
     ;
 
+    final float sliderRange = 5.0;
     sliderScale = cp5.addSlider("sCale")
       .setPosition(gap, gap)
       .setSize(sliderWidth, sliderHeight)
       .setValue(1)
-      .setMin(0.3) 
-      .setMax(3) 
+      .setMin(1.0 / sliderRange) 
+      .setMax(sliderRange) 
       .setGroup(groupScaleAndSlices)
       ;
 
@@ -179,8 +183,8 @@ class GUI
       .setPosition(gap, gap * 3 + sliderHeight * 2)
       .setSize(sliderWidth, sliderHeight)
       .setValue(1)
-      .setMin(0.3) 
-      .setMax(3) 
+      .setMin(1.0 / sliderRange) 
+      .setMax(sliderRange) 
       .setGroup(groupScaleAndSlices)
       ;
 

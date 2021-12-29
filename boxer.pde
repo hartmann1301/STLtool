@@ -9,6 +9,8 @@ class Boxer
   private float scaleFaktor = 1.0;
   private float boxFaktor = 1.0;
   
+  private float combinedFaktor = 1.0;
+  
   float radiusMaxXY = 0;
 
   public void setSliceFaktor(float f)
@@ -40,7 +42,7 @@ class Boxer
     temp.minus(parser.minLen);
 
     // do all in one, this is way faster
-    temp.multiply((scaleFaktor * boxFaktor) / sliceFaktor);
+    temp.multiply(combinedFaktor);
 
     return temp;
   }  
@@ -49,9 +51,13 @@ class Boxer
   {
     updateLenVectors();
 
-    radiusMaxXY = parser.getRadiusMaxXY();
+    combinedFaktor = ((scaleFaktor * boxFaktor) / sliceFaktor);
+
+    radiusMaxXY = parser.getRadiusMaxXY() * combinedFaktor;
 
     data.update();
+   
+    fastData.update();
    
     zylinder.update();
     
@@ -69,9 +75,7 @@ class Boxer
     minLen.multiply(scaleFaktor);
     maxLen.multiply(scaleFaktor);
     objectLen.multiply(scaleFaktor);
-    objectSlices.multiply(scaleFaktor);
-
-    objectSlices.divide(sliceFaktor);
+    objectSlices.multiply(scaleFaktor / sliceFaktor);
     
     // because instead of a point a box is placed
     float max = objectLen.getMaxValue();

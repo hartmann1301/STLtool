@@ -53,7 +53,7 @@ class Preview
     case PreviewStyles.concentric: 
       zylinder.draw();
       break;
-      
+
     default:
       println("Error unknown preview type");
       break;
@@ -150,12 +150,12 @@ class Preview
     }
   }
 
-  void drawBox(BitStatus s, int xPos, int yPos, int zPos)
+  void drawBox(BitStatus s, float xPos, float yPos, float zPos)
   {
     drawBox(s, xPos, yPos, zPos, 1, 1, 1);
   }
 
-  void drawBox(BitStatus s, int xPos, int yPos, int zPos, int xLen, int yLen, int zLen)
+  void drawBox(BitStatus s, float xPos, float yPos, float zPos, int xLen, int yLen, int zLen)
   {
     //println("set Box at x: " + x + " y:" + y + " z:" + z);
 
@@ -183,6 +183,26 @@ class Preview
 
     color strokeColor = color(255, 255, 255);   
     drawBox(strokeColor, fillColor, xPos, yPos, zPos, xLen, yLen, zLen);
+  }
+
+  void drawBox(float xPos, float yPos, float zPos)
+  {
+    drawBox(xPos, yPos, zPos, 1, 1, 1); 
+  }
+
+  void drawBox(float xPos, float yPos, float zPos, int xLen, int yLen, int zLen)
+  {
+    final int strokeTone = 255;
+    final int fillTone = 200;
+    final color strokeColor = color(strokeTone, strokeTone, strokeTone);   
+    final color fillColor = color(fillTone, fillTone, fillTone);   
+
+    drawBox(strokeColor, fillColor, xPos, yPos, zPos, xLen, yLen, zLen);
+  }
+
+  void drawBox(color s, color f, float xPos, float yPos, float zPos)
+  {
+    drawBox(s, f, xPos, yPos, zPos, 1, 1, 1);
   }
 
   void drawBox(color s, color f, float xPos, float yPos, float zPos, float xLen, float yLen, float zLen)

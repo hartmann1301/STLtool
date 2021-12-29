@@ -28,15 +28,13 @@ class FastData
 
   public void update()
   {
+    timeMonitor.startTask();
+    
     createPixelsAndLines();
-
-    //printDataSize();
-
     optimizeDirectionY();
-
-    //printDataSize();
-
     optimizeDirectionZ();
+
+    timeMonitor.stopTask("update fastData");    
 
     //printDataSize();
     //printData();
@@ -87,11 +85,7 @@ class FastData
       if (int(gui.sliderRows.getValue()) < zPos - 1)
         continue;
 
-      final int grayTone = 200;
-      final color strokeColor = color(255, 255, 255);  
-      final color fillColor = color(grayTone, grayTone, grayTone);  
-
-      preview.drawBox(strokeColor, fillColor, xPos, yPos, zPos, xLen, yLen, zLen);
+      preview.drawBox(xPos, yPos, zPos, int(xLen), int(yLen), int(zLen));
     }
   }
 
