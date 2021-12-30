@@ -7,7 +7,6 @@ import java.io.*;
 import java.util.*;
 import controlP5.*;
 
-
 boolean setupDone = false;
 void setup() 
 {
@@ -25,8 +24,8 @@ void setup()
   
   String fileName = new String();
   //fileName = "cube247.stl";
-  //fileName = "ball12.stl";
-  fileName = "abstaktT.stl";
+  fileName = "ball12.stl";
+  //fileName = "abstaktT.stl";
   //fileName = "foxAscii.stl";  
   
   String filePath = new String(sketchPath() + "/stl-examples/" + fileName);

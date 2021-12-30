@@ -29,10 +29,11 @@ class Data
 
     axisLength =  new IntV3(x, y, z);
 
-    //println("allocate 2bit byteArray[" + x + "][" +  y + "][" + z + "]");
+    println("allocate 2bit byteArray[" + x + "][" +  y + "][" + z + "]");
 
-    //  byteArray = new byte[x][y/4][z];
-    byteArray = new byte[x][y][z];
+    byteArray = null;
+
+    byteArray = new byte[x][y][z/4 + 1];
 
     // the counter will be counted in the addParserTriangles() function
     cntShell = 0;
@@ -285,11 +286,40 @@ class Data
       return;
     }
 
-    byte newByte = s.getValue();
+    int newData = (int) s.getValue();
+
+    //debug.println("set point (x:" + x + ",  y:" + y + ",  z:" + z + ") to " + newData); 
 
     // bitshifting
+    // create aktual z pos und shifter
+    final int zPos = z >> 2; // divide Z by 4
+    final int zMod4 = z % 4;    
 
-    byteArray[x][y][z] = newByte;
+    // shift new data
+    newData = newData << (zMod4 * 2);
+
+    // save the old byte
+    int backup = byteArray[x][y][zPos];
+
+    // delete the two bits for the new data
+    backup = backup & getZerosMask(zMod4);
+  
+    // put backup and new data together
+    newData = newData | backup;
+  
+    byteArray[x][y][zPos] = (byte) newData;
+  }
+
+  final private int getOnesMask(int shift)
+  {
+    //return shift == 0 ? 0b00000011 : (shift == 1 ? 0b00001100 : (shift == 2 ? 0b00110000 : 0b11000000));
+    return shift == 0 ? 3 : (shift == 1 ? 12 : (shift == 2 ? 48 : 192));
+  }
+
+  final private int getZerosMask(int shift)
+  {
+    //return shift == 0 ? 0b11111100 : (shift == 1 ? 0b11110011 : (shift == 2 ? 0b11001111 : 0b00111111));
+    return shift == 0 ? 252 : (shift == 1 ? 243 : (shift == 2 ? 207 : 63));
   }
 
   public boolean isObject(int x, int y, int z)
@@ -324,13 +354,19 @@ class Data
       return BitStatus.UNKNOWN;
     }
 
-    byte d = byteArray[x][y][z];
+    // create aktual z pos und shifter
+    final int zPos = z >> 2; // divide Z by 4
+    final int zMod4 = z % 4;    
+    
+    int newData = byteArray[x][y][zPos];
 
-    // do the bitshifting
+    // do the bitshifting, get only the two relevant bits
+    newData = newData & getOnesMask(zMod4);
+    
+    // shift relevant bytes to correct position
+    newData = newData >> (zMod4 * 2);
 
-    BitStatus s = BitStatus.fromByte(d);
-
-    return s;
+    return BitStatus.fromInt(newData);
   }
 
   private void bresenham3D(IntV3 p1, IntV3 p2)
@@ -428,7 +464,7 @@ public enum BitStatus
 
   final int value;
 
-  public static BitStatus fromByte(byte x) {
+  public static BitStatus fromInt(int x) {
     switch(x) {
     case 0:
       return UNKNOWN;
@@ -442,8 +478,8 @@ public enum BitStatus
     return null;
   }
 
-  public byte getValue()
+  public int getValue()
   {
-    return byte(value);
+    return value;
   }
 };

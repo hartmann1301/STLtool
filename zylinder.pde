@@ -112,9 +112,9 @@ class Zylinder
 
   public BitStatus getPoint(int i)
   {
-    final byte d = byteArray[i];
+    final int d = byteArray[i];
 
-    return BitStatus.fromByte(d);
+    return BitStatus.fromInt(d);
   }
 
 
@@ -131,9 +131,9 @@ class Zylinder
       return;
     }
 
-    byte newByte = s.getValue();
+    int newByte = s.getValue();
 
-    byteArray[i] = newByte;
+    byteArray[i] = (byte) newByte;
   }
 
   int getDataLen(int r, int h)
