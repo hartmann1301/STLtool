@@ -8,14 +8,18 @@ class Data
 
   long cntShell, cntInside, cntOutside;
 
+  final String taskName = new String("taskRawData");
+
   long getArrayPixels()
   {
     return axisLength.x * axisLength.y * axisLength.z;
   }
 
+  int zArrayLen = 0;
+
   void update()
   {
-    timeMonitor.startTask();
+    timeMonitor.startTask(taskName);
 
     // int() statt round() führt dazu, dass bei minuswerten die erste box abgeschnitten wird
     int x = round(boxer.objectSlices.x + 1);
@@ -27,13 +31,14 @@ class Data
     y += 2;
     z += 2;  
 
+    zArrayLen = z / 4;
+    if (z % 4 != 0)
+      zArrayLen += 1;
+
     axisLength =  new IntV3(x, y, z);
 
-    println("allocate 2bit byteArray[" + x + "][" +  y + "][" + z + "]");
-
-    byteArray = null;
-
-    byteArray = new byte[x][y][z/4 + 1];
+    //println("allocate 2bit byteArray[" + x + "][" +  y + "][" + z / 4 + 1 + "]");
+    byteArray = new byte[x][y][zArrayLen];
 
     // the counter will be counted in the addParserTriangles() function
     cntShell = 0;
@@ -45,7 +50,32 @@ class Data
 
     fillWithBoxes();
 
-    timeMonitor.stopTask("update data");
+    timeMonitor.stopTask(taskName);
+  }
+
+  void draw()
+  {
+    for (int x = 0; x < axisLength.x - 1; x++)
+    {
+      for (int y = 0; y < axisLength.y - 1; y++)
+      {
+        for (int z = 0; z < axisLength.z - 1; z++)
+        {
+          if (int(gui.sliderRows.getValue()) < z)
+            continue;
+
+          BitStatus s = getPoint(x, y, z);
+
+          if (s == BitStatus.OUTSIDE)
+            continue;
+
+          if (s == BitStatus.INSIDE)
+            continue;
+
+          preview.drawBox(s, x, y, z);
+        }
+      }
+    }
   }
 
   private void fillWithBoxes()
@@ -63,6 +93,10 @@ class Data
 
       fillStack.clear();
 
+      // this indicator works only if the algorithm starts at x=0, y=0, z=0
+      int progressIndicator = 0;
+      final int progressMax = axisLength.x + axisLength.y + axisLength.z;
+
       // add new points to fillStack for new row
       for (IntV3 v : tempStack)
       {
@@ -72,9 +106,12 @@ class Data
         addToStack(v.x, v.y - 1, v.z);
         addToStack(v.x, v.y, v.z + 1);
         addToStack(v.x, v.y, v.z - 1);
+
+        progressIndicator = v.x + v.y + v.z;
       }
 
-      //println("fillStack.size: " + fillStack.size());
+      //println("fillStack.size: " + fillStack.size() + " progress:" + ((float)progressIndicator) / progressMax);
+      timeMonitor.updateTask(taskName, 0.2, 0.7, progressIndicator, progressMax);
     }
 
     //println("put " + cntOutside + " boxes around Object");
@@ -86,7 +123,9 @@ class Data
       for (int y = 0; y < axisLength.y; y++)
       {
         for (int z = 0; z < axisLength.z; z++)
-        {
+        {               
+          timeMonitor.updateTask(taskName, 0.9, 0.1, z, axisLength.z);
+
           if (BitStatus.UNKNOWN == getPoint(x, y, z))
           {
             setPoint(BitStatus.INSIDE, x, y, z);
@@ -130,6 +169,9 @@ class Data
   {
     for (int i = 0; i < parser.getListSize(); i++)
     {
+      timeMonitor.updateTask(taskName, 0.0, 0.2, i, parser.getListSize());
+
+      //println("add triangle " + i);
       addPixelTriangle(boxer.getTriangle(i));
     }
   }
@@ -292,7 +334,7 @@ class Data
 
     // bitshifting
     // create aktual z pos und shifter
-    final int zPos = z >> 2; // divide Z by 4
+    final int zPos = z / 4; // divide Z by 4
     final int zMod4 = z % 4;    
 
     // shift new data
@@ -303,10 +345,10 @@ class Data
 
     // delete the two bits for the new data
     backup = backup & getZerosMask(zMod4);
-  
+
     // put backup and new data together
     newData = newData | backup;
-  
+
     byteArray[x][y][zPos] = (byte) newData;
   }
 
@@ -355,14 +397,24 @@ class Data
     }
 
     // create aktual z pos und shifter
-    final int zPos = z >> 2; // divide Z by 4
+    final int zPos = z / 4; // divide Z by 4
     final int zMod4 = z % 4;    
-    
-    int newData = byteArray[x][y][zPos];
+
+    int newData = 0; // = byteArray[x][y][zPos];
+
+    try {
+      newData = byteArray[x][y][zPos];
+    } 
+    catch (Exception e) {      
+      //debug.println("Error: getPoint(x:" + x + ",  y:" + y + ",  z:" + z + ") axis: " + axisLength.toString());    
+      e.printStackTrace();
+      
+      // TODO set flag to redo
+    }
 
     // do the bitshifting, get only the two relevant bits
     newData = newData & getOnesMask(zMod4);
-    
+
     // shift relevant bytes to correct position
     newData = newData >> (zMod4 * 2);
 

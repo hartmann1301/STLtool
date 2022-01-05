@@ -25,19 +25,19 @@ class Zylinder
   int zylinderHeight = 0;
 
   byte[] byteArray = null;
+  int byteArrayItems, byteArrayLength;
+
+  final String taskName = new String("taskZylinder");  
 
   void update()
   {
-    if (gui.checkbox.getArrayValue()[CheckBoxes.concentricData] == Off)
-      return;
-
-    timeMonitor.startTask();
+    timeMonitor.startTask(taskName);
 
     createArray();
 
     fillArray();
 
-    timeMonitor.stopTask("update zylinder");
+    timeMonitor.stopTask(taskName);
   }
 
   void createArray()
@@ -47,14 +47,30 @@ class Zylinder
 
     //debug.println("Zylinder: createArray() rMax:" + rMax + " zylinderHeight:" + zylinderHeight);
 
-    byteArray = new byte[getDataLen(rMax, zylinderHeight)];
+    byteArrayItems = getDataLen(rMax, zylinderHeight);
+    byteArrayLength = byteArrayItems / 4;
+
+    if (byteArrayItems % 4 != 0)
+      byteArrayLength += 1;
+
+    byteArray = new byte[byteArrayLength];
+  }
+
+  int getDataLen(int r, int h)
+  {
+    int cnt = 0;
+    for (int i = 0; i <= r; i++)
+    {
+      cnt += getRingCount(i);
+    }
+    return cnt * h;
   }
 
   void fillArray()
   {
     //debug.println("Zylinder: fillArray()");
 
-    for (int i = 0; i < byteArray.length; i++)
+    for (int i = 0; i < byteArrayItems; i++)
     {
       PVector p = getPVectorFromArray(i);
 
@@ -73,23 +89,16 @@ class Zylinder
   {
     translate(boxer.objectLen.x / 2, boxer.objectLen.y / 2, 0);
 
-    if (gui.checkbox.getArrayValue()[CheckBoxes.concentricData] == Off)
-    {
-      rotateZ(radians(90));
-      rotateX(radians(-90));      
-      text("no Data", -boxer.objectLen.x / 2, -boxer.objectLen.x / 2);
-      return;
-    }
-
     if (byteArray == null)
     {
-      boxer.update();
+      // do not call thread here
+      updateBoxer();
     }
 
     final float sf = boxer.sliceFaktor;
     translate(sf, sf, sf);
 
-    for (int i = 0; i < byteArray.length; i++)
+    for (int i = 0; i < byteArrayItems; i++)
     {
       BitStatus s = getPoint(i);
 
@@ -112,17 +121,31 @@ class Zylinder
 
   public BitStatus getPoint(int i)
   {
-    final int d = byteArray[i];
+    // create aktual z pos und shifter
+    final int iPos = i / 4; // divide Z by 4
+    final int iMod4 = i % 4;    
 
-    return BitStatus.fromInt(d);
+    // get full byte with four items
+    int newData = byteArray[iPos];
+
+    // do the bitshifting, get only the two relevant bits
+    newData = newData & data.getOnesMask(iMod4);
+
+    // shift relevant bytes to correct position
+    newData = newData >> (iMod4 * 2);
+
+    return BitStatus.fromInt(newData);
+
+    // without bitshifting
+    //return BitStatus.fromInt(byteArray[i]);
   }
 
 
   void setPoint(BitStatus s, int i)
   {
-    if (i < 0 || i > byteArray.length - 1)
+    if (i < 0 || i > byteArrayItems - 1)
     {
-      println("WARNING: Zylinder Point (i:" + i + " out of bounds, byteArray.length:" + byteArray.length);
+      println("WARNING: Zylinder Point (i:" + i + " out of bounds, byteArrayItems:" + byteArrayItems);
       return;
     }
 
@@ -131,19 +154,28 @@ class Zylinder
       return;
     }
 
-    int newByte = s.getValue();
+    // create aktual z pos und shifter
+    final int iPos = i / 4; // divide Z by 4
+    final int iMod4 = i % 4;    
 
-    byteArray[i] = (byte) newByte;
-  }
+    int newData = s.getValue();
 
-  int getDataLen(int r, int h)
-  {
-    int cnt = 0;
-    for (int i = 0; i <= r; i++)
-    {
-      cnt += getRingCount(i);
-    }
-    return cnt * h;
+    // shift new data
+    newData = newData << (iMod4 * 2);
+
+    // save the old byte
+    int backup = byteArray[iPos];
+
+    // delete the two bits for the new data
+    backup = backup & data.getZerosMask(iMod4);
+
+    // put backup and new data together
+    newData = newData | backup;
+
+    byteArray[iPos] = (byte) newData;
+
+    // without bitshifting
+    //byteArray[i] = (byte) s.getValue();
   }
 
   int getRingCount(int i)
@@ -179,7 +211,7 @@ class Zylinder
 
   ZVector getZVectorFromArray(int i)
   {
-    final int layer = byteArray.length / zylinderHeight;
+    final int layer = byteArrayItems / zylinderHeight;
 
     int heightPos  = i / layer;
 
@@ -203,3 +235,10 @@ class Zylinder
     return offset;
   }
 }
+
+/*
+      rotateZ(radians(90));
+ rotateX(radians(-90));      
+ text("no Data", -boxer.objectLen.x / 2, -boxer.objectLen.x / 2);
+ return;
+ */

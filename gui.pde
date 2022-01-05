@@ -9,7 +9,6 @@ static final class CheckBoxes
   static final int autoRotation = 0;
   static final int coordinateSystem = 1;
   static final int arrayBox = 2;
-  static final int concentricData = 3;
 }
 
 static final class PreviewStyles
@@ -27,16 +26,20 @@ class GUI
   CheckBox checkbox;
 
   DropdownList previewStylesList;
+  int lastPreviewStyle;
   List previewTypes = Arrays.asList(
     "orginal stl", 
     "array of boxes", 
-    "optimized boxes",
+    "optimized boxes", 
     "concentric"
     );
 
   Accordion accordion;
 
   Slider2D previewAngle;
+
+  Slider sliderProgress;
+  Textlabel lableProgressTask;
 
   Slider sliderRows;
 
@@ -70,7 +73,16 @@ class GUI
       .setValue(0)
       .setPosition(gap, gap)
       .setSize(sliderWidth, sliderHeight)
-      ;
+      .addCallback(new CallbackListener() {
+      public void controlEvent(CallbackEvent event) {
+        if (event.getAction() == ControlP5.ACTION_RELEASE) {
+          //println("press loadFile button");
+          selectInput("Select a file to process:", "fileSelected", sketchFile(sketchPath()));  
+          //cp5.remove(event.getController().getName());
+        }
+      }
+    }  
+    );
 
     lableVersion = cp5.addTextlabel("lableVersion")
       .setPosition(width - 80, height - 30)
@@ -88,19 +100,30 @@ class GUI
       .addItem("Auto Rotation", CheckBoxes.autoRotation)
       .addItem("Coordinate System", CheckBoxes.coordinateSystem)
       .addItem("Array Box", CheckBoxes.arrayBox)
-      .addItem("Concentric Data", CheckBoxes.concentricData);
-      
+      ;
+
     // set default values
     checkbox.getItem(CheckBoxes.autoRotation).setValue(Off);
     checkbox.getItem(CheckBoxes.coordinateSystem).setValue(On);
     checkbox.getItem(CheckBoxes.arrayBox).setValue(On);
-    checkbox.getItem(CheckBoxes.concentricData).setValue(Off);
+
+    sliderProgress = cp5.addSlider("progressPercent")
+      .setPosition(0, height - gap)
+      .setSize(width, 20)
+      .setMin(0)
+      .setMax(1)
+      .setDecimalPrecision(2)
+      ;
+
+    lableProgressTask = cp5.addTextlabel("lableProgressTask")
+      .setPosition(gap, height - (2*gap + sliderHeight))
+      ;  
 
     // groupCamera
     final color accBCcolor = color(255, 50);
     final int angelSliderheight = 100;
     Group groupCamera = cp5.addGroup("Camera and Preview")
-      .setBackgroundHeight(2 * sliderHeight + angelSliderheight + 4 * gap)
+      .setBackgroundHeight(2*sliderHeight + angelSliderheight + 4*gap)
       .setBackgroundColor(accBCcolor)
       .setBarHeight(sliderHeight);
     ;
@@ -109,7 +132,7 @@ class GUI
     final int verticalMax = 100;
     previewAngle = cp5.addSlider2D("Adjust Angle")
       .setPosition(gap, gap)
-      .setSize(accWidth - 2 * gap, angelSliderheight)
+      .setSize(accWidth - 2*gap, angelSliderheight)
       .setMinMax(-horizontalMax, -verticalMax, horizontalMax, verticalMax)
       .setValue(0, 0)
       .setGroup(groupCamera)
@@ -214,8 +237,68 @@ class GUI
       .setBarHeight(sliderHeight)
       .addItems(previewTypes)
       .setValue(PreviewStyles.optimizedBoxes)
-      .close()  
-      ;
+      .addCallback(new CallbackListener() {
+      public void controlEvent(CallbackEvent event) {
+        if (event.getAction() == ControlP5.ACTION_CLICK) {
+          clickedPreviewStylesList();
+        }
+      }
+    }  
+    )
+    .close();
+
+    // to react only on changes of the previewStylesList list
+    lastPreviewStyle = (int) previewStylesList.getValue();
+  }
+
+  void clickedPreviewStylesList()
+  {
+    int n = (int) previewStylesList.getValue();
+    
+    // to react only on changes of the previewStylesList list
+    if (lastPreviewStyle == n)
+      return;
+
+    lastPreviewStyle = n;
+
+    println("update previewStyle");
+    updateInfoLables();
+
+    switch(n) 
+    {
+    case PreviewStyles.originalSTL: 
+      break;
+    case PreviewStyles.arrayOfBoxes: 
+      break;
+    case PreviewStyles.optimizedBoxes: 
+      fastData.update();
+      break;
+    case PreviewStyles.concentric: 
+      zylinder.update();
+      break;
+    }
+  }
+
+  void updateInfoLables()
+  {
+    String s = new String();
+    
+    switch((int) previewStylesList.getValue()) 
+    {
+    case PreviewStyles.originalSTL: 
+      s = "Triangles: " + parser.getListSize();
+      break;
+    case PreviewStyles.arrayOfBoxes: 
+      s = "Shell: " + data.cntShell + ", Inside: " + data.cntInside + ", Outside: " + data.cntOutside;
+      break;
+    case PreviewStyles.optimizedBoxes: 
+      s = "Optimized Boxes: " + fastData.drawData.size();
+      break;
+    case PreviewStyles.concentric: 
+      break;
+    }
+
+    gui.lablePreviewInfo.setText(s);
   }
 
   void changeCameraAngleX(float diff)
@@ -247,43 +330,15 @@ class GUI
   }
 };
 
-void previewStyle(int n)
-{
-  //println("update previewStyle");
-  String s = new String();
-  switch(n) 
-  {
-  case PreviewStyles.originalSTL: 
-    s = "Triangles: " + parser.getListSize();
-    break;
-  case PreviewStyles.arrayOfBoxes: 
-    s = "Shell: " + data.cntShell + ", Inside: " + data.cntInside + ", Outside: " + data.cntOutside;
-    break;
-  case PreviewStyles.optimizedBoxes: 
-    s = "Optimized Boxes: " + fastData.drawData.size();
-    break;
-  case PreviewStyles.concentric: 
-
-    break;    
-    
-  }
-  gui.lablePreviewInfo.setText(s);
-}
-
-public void loadFile() {
-  if (setupDone == false)
-    return;
-
-  selectInput("Select a file to process:", "fileSelected", sketchFile(sketchPath()));
-}
-
 void fileSelected(File selection) {
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
   } else {
     println("User selected " + selection.getAbsolutePath());
 
-    parser.loadFile(selection.getAbsolutePath());
+    parser.filePath = selection.getAbsolutePath();
+
+    parserLoadFileThread();
   }
 }
 
@@ -309,19 +364,18 @@ public void sCale(float v) {
   boxer.setScaleFaktor(v);
 }
 
+/*
 void controlEvent(ControlEvent theEvent) {
-  if (theEvent.isFrom(gui.checkbox)) {
-    //println("CHECKBOX:");
-    //println(gui.checkbox.getArrayValue());
-  } else if (theEvent.isController()) {
-    //println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
-  }
-
-
-  /*
-    if (gui.checkbox.getArrayValue()
-   {
-   println("checkbox event " + gui.checkbox.getArrayValue()); 
-   }
-   */
-}
+ if (theEvent.isFrom(gui.checkbox)) {
+ //println("CHECKBOX:");
+ //println(gui.checkbox.getArrayValue());
+ } else if (theEvent.isController()) {
+ //println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
+ }
+ if (gui.checkbox.getArrayValue()
+ {
+ println("checkbox event " + gui.checkbox.getArrayValue()); 
+ }
+ 
+ }
+ */

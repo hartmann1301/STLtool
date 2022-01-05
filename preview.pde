@@ -42,10 +42,10 @@ class Preview
     switch((int) gui.previewStylesList.getValue()) 
     {
     case PreviewStyles.originalSTL: 
-      drawOriginalSTL();
+      parser.draw();
       break;
     case PreviewStyles.arrayOfBoxes: 
-      drawRawData();
+      data.draw();
       break;
     case PreviewStyles.optimizedBoxes: 
       fastData.draw();
@@ -123,31 +123,6 @@ class Preview
   {
     //z kommt normal aus dem Bildschirm, soll aber nach oben zeigen
     rotateX(radians(90));
-  }
-
-  void drawRawData()
-  {
-    for (int x = 0; x < data.axisLength.x - 1; x++)
-    {
-      for (int y = 0; y < data.axisLength.y - 1; y++)
-      {
-        for (int z = 0; z < data.axisLength.z - 1; z++)
-        {
-          if (int(gui.sliderRows.getValue()) < z)
-            continue;
-
-          BitStatus s = data.getPoint(x, y, z);
-
-          if (s == BitStatus.OUTSIDE)
-            continue;
-
-          if (s == BitStatus.INSIDE)
-            continue;
-
-          drawBox(s, x, y, z);
-        }
-      }
-    }
   }
 
   void drawBox(BitStatus s, float xPos, float yPos, float zPos)
@@ -231,29 +206,6 @@ class Preview
 
     popStyle();
     popMatrix();
-  }
-
-  void drawOriginalSTL()
-  {   
-    for (Triangle t : parser.triangleList)
-    {
-      // WARNING: this might not be 100% correct
-      if (gui.sliderRows.getValue() < t.getMinZ() * gui.sliderScale.getValue() - boxer.minLen.z)
-        continue;
-
-      // im data array werden die werte schon ohne minLen abgelegt
-      float xMin = parser.minLen.x;
-      float yMin = parser.minLen.y;
-      float zMin = parser.minLen.z;
-
-      float f = boxer.scaleFaktor;
-
-      beginShape();
-      vertex((t.p1.x - xMin) * f, (t.p1.y - yMin) * f, (t.p1.z - zMin) * f);
-      vertex((t.p2.x - xMin) * f, (t.p2.y - yMin) * f, (t.p2.z - zMin) * f);
-      vertex((t.p3.x - xMin) * f, (t.p3.y - yMin) * f, (t.p3.z - zMin) * f);
-      endShape();
-    }
   }
 
   void drawCoordinateSystem()

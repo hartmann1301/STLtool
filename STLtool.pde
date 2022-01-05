@@ -22,28 +22,25 @@ void setup()
 
   timeMonitor.setFrameRate(30);  
   
-  String fileName = new String();
-  //fileName = "cube247.stl";
-  fileName = "ball12.stl";
-  //fileName = "abstaktT.stl";
-  //fileName = "foxAscii.stl";  
+  //  parser.setExampleFile("cube247.stl");
+  parser.setExampleFile("ball12.stl");
+  //  parser.setExampleFile("abstaktT.stl");
+  //parser.setExampleFile("foxAscii.stl");  
   
-  String filePath = new String(sketchPath() + "/stl-examples/" + fileName);
-  //filePath = "C:/Users/Thomas/Downloads/Ape50Kennzeichen.stl";
-  parser.loadFile(filePath);
-
-  //parser.printTriangles();
+  // do this without theard to init all the values
+  parser.loadFile();
 
   //println("done with setup");
   setupDone = true;
 }
 
+final String drawTaskName = new String("taskDraw");
 void draw() 
-{
+{  
   if (focused == false)
     return;
 
-  timeMonitor.startDraw();   
+  timeMonitor.startTask(drawTaskName);   
   
   background(0);  // Set background to black  
 
@@ -54,5 +51,5 @@ void draw()
 
   preview.draw();
 
-  timeMonitor.stopDraw();
+  timeMonitor.stopTask(drawTaskName);
 }

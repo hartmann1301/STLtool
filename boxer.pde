@@ -1,4 +1,17 @@
-Boxer boxer = new Boxer();
+Boxer boxer = new Boxer(); //<>//
+
+void updateBoxerThread()
+{
+  thread("updateBoxer");
+}
+
+void updateBoxer()
+{
+  if (timeMonitor.isBusy(boxer.taskName))
+    return;  
+
+  boxer.update();
+}
 
 class Boxer
 {
@@ -8,10 +21,14 @@ class Boxer
   private float sliceFaktor = 1.0;
   private float scaleFaktor = 1.0;
   private float boxFaktor = 1.0;
-  
+
   private float combinedFaktor = 1.0;
-  
+
+  public boolean busy = false;
+
   float radiusMaxXY = 0;
+
+  final String taskName = new String("taskBoxer");
 
   public void setSliceFaktor(float f)
   {
@@ -22,7 +39,7 @@ class Boxer
 
     //debug.println("changed sliceFaktor to: " + sliceFaktor);
 
-    update();
+    updateBoxerThread();
   }
 
   public void setScaleFaktor(float f)
@@ -32,7 +49,7 @@ class Boxer
 
     scaleFaktor = f;
 
-    update();
+    updateBoxerThread();
   }
 
   public Triangle getTriangle(int i)
@@ -48,20 +65,29 @@ class Boxer
   }  
 
   void update()
-  {
+  {    
+    timeMonitor.startTask(boxer.taskName);
+
+    // they are needed in the raw data array
     updateLenVectors();
 
+    // it is faster to use this than  do 3 calculations
     combinedFaktor = ((scaleFaktor * boxFaktor) / sliceFaktor);
 
     radiusMaxXY = parser.getRadiusMaxXY() * combinedFaktor;
 
+    // do not use threads here, very dangerous!
     data.update();
-   
-    fastData.update();
-   
-    zylinder.update();
-    
+
+    if (gui.previewStylesList.getValue() == PreviewStyles.optimizedBoxes)
+      fastData.update();
+
+    if (gui.previewStylesList.getValue() == PreviewStyles.concentric)
+      zylinder.update();
+
     updateGui();
+
+    timeMonitor.stopTask(boxer.taskName);
   }
 
   private void updateLenVectors()
@@ -76,7 +102,7 @@ class Boxer
     maxLen.multiply(scaleFaktor);
     objectLen.multiply(scaleFaktor);
     objectSlices.multiply(scaleFaktor / sliceFaktor);
-    
+
     // because instead of a point a box is placed
     float max = objectLen.getMaxValue();
     boxFaktor = (max - 1)/ max; 
@@ -90,8 +116,8 @@ class Boxer
 
     gui.lableSlices.setText(data.axisLength.toString());
     gui.lableDimensions.setText(getObjectLenString());
-    
-    previewStyle(int(gui.previewStylesList.getValue()));
+
+    gui.updateInfoLables();
   }
 
   String getObjectLenString()

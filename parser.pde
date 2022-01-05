@@ -1,14 +1,42 @@
 Parser parser = new Parser();
 
+void parserLoadFileThread()
+{
+  // no need to check busy, because it will only be called rarely
+  thread("parserLoadFile");
+}
+
+void parserLoadFile()
+{
+  parser.loadFile();
+}
+
 class Parser
 {
   // those scale with faktor
   Vector minLen, maxLen, objectLen;
 
-  private ArrayList<Triangle> triangleList;
+  private ArrayList<Triangle> triangleList = null;
 
-  public void loadFile(String filePath) 
+  String fileName = new String();
+  String filePath = null;
+
+  boolean busy = false;
+
+  public void setExampleFile(String name)
   {
+    fileName = name;
+    filePath = new String(sketchPath() + "/stl-examples/" + name);
+    //filePath = "C:/Users/Thomas/Downloads/Ape50Kennzeichen.stl";
+  }
+
+  public void loadFile() 
+  {
+    if (filePath == null)
+      return;
+
+    busy = true;
+
     // create a new empty triangles list
     triangleList = new ArrayList<Triangle>();      
 
@@ -21,6 +49,10 @@ class Parser
     }
 
     update();
+
+    busy = false;
+    
+    updateBoxerThread();
   }
 
   private boolean isASCIICheck(String filePath) 
@@ -161,12 +193,42 @@ class Parser
 
     // sortiert die liste nach z values
     Collections.sort(triangleList, new TriangleComparator());
+  }
 
-    boxer.update();
+  public void draw()
+  {
+    if (busy)
+      return;
+
+    for (Triangle t : triangleList)
+    {
+      float rowsPercent = 0;
+      if (gui.sliderRows.getMax() != 0)
+        rowsPercent = gui.sliderRows.getValue() / gui.sliderRows.getMax();
+
+      if (t.getMinZ() > maxLen.z * rowsPercent)
+        continue;
+
+      // im data array werden die werte schon ohne minLen abgelegt
+      float xMin = minLen.x;
+      float yMin = minLen.y;
+      float zMin = minLen.z;
+
+      float f = boxer.scaleFaktor;
+
+      beginShape();
+      vertex((t.p1.x - xMin) * f, (t.p1.y - yMin) * f, (t.p1.z - zMin) * f);
+      vertex((t.p2.x - xMin) * f, (t.p2.y - yMin) * f, (t.p2.z - zMin) * f);
+      vertex((t.p3.x - xMin) * f, (t.p3.y - yMin) * f, (t.p3.z - zMin) * f);
+      endShape();
+    }
   }
 
   public int getListSize()
   {
+    if (triangleList == null)
+      return 0;
+
     return triangleList.size();
   }
 

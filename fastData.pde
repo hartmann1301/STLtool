@@ -1,8 +1,6 @@
-
-
 FastData fastData = new FastData();
 
-class FastData
+class FastData extends Thread
 {
   FastData()
   {
@@ -26,24 +24,30 @@ class FastData
 
   ArrayList<ArrayList<Integer>> drawData = new ArrayList<ArrayList<Integer>>();
 
+  final String taskName = new String("taskFastData");
+
   public void update()
   {
-    timeMonitor.startTask();
-    
-    createPixelsAndLines();
-    optimizeDirectionY();
-    optimizeDirectionZ();
+    timeMonitor.startTask(taskName);
 
-    timeMonitor.stopTask("update fastData");    
+    drawData.clear();
+    createHorizontalLines();
+    createHorizontalLayers();
+    createHugeBoxes();
 
-    //printDataSize();
-    //printData();
+    timeMonitor.stopTask(taskName);
   }
 
   public void draw()
   {
-    for (ArrayList<Integer> entry : drawData)
+    for (int i = 0; i < drawData.size() - 1; i++)
     {
+      // usingn for (ArrayList<Integer> entry : drawData) cause errors
+      ArrayList<Integer> entry = drawData.get(i);
+
+      if (entry == null)
+        return;
+
       if (entry.size() < 3)
       {
         println("Error wrong entry with len:" + entry.size());
@@ -105,16 +109,16 @@ class FastData
     return len;
   }
 
-  private void createPixelsAndLines()
+  private void createHorizontalLines()
   {
-    drawData.clear();
-
     for (int z = 0; z < data.axisLength.z; z++)
     {
+      timeMonitor.updateTask(taskName, 0, 0.1, z, data.axisLength.z);
+
       for (int x = 0; x < data.axisLength.x; x++)
       {
         for (int y = 0; y < data.axisLength.y; y++)
-        {   
+        {             
           // nothing to do when pixel is unknown or outside
           if (data.isObject(x, y, z) == false)
             continue;
@@ -145,11 +149,14 @@ class FastData
     }
   }
 
-  private void optimizeDirectionY()
+  private void createHorizontalLayers()
   {
     ArrayList<Integer> last = new ArrayList<Integer>();  
 
     for (int i = drawData.size() - 1; i >= 0; i--) {
+
+      timeMonitor.updateTask(taskName, 0.1, 0.2, i, drawData.size() - 1, true);
+
       // get last entry
       ArrayList<Integer> entry = drawData.get(i);
 
@@ -198,7 +205,7 @@ class FastData
           // add an xLen 1
           entry.add(1);  
           entry.add(yLen);
-        }    
+        }
       }
 
       // create a deep copy for next loop
@@ -210,12 +217,15 @@ class FastData
     }
   }
 
-  private void optimizeDirectionZ()
+  private void createHugeBoxes()
   {
 
     ArrayList<Integer> deleteList = new ArrayList<Integer>();
 
     for (int i = drawData.size() - 1; i >= 0; i--) {
+
+      timeMonitor.updateTask(taskName, 0.3, 0.7, i, drawData.size() - 1, true);
+
       // get last entry
       ArrayList<Integer> entry = drawData.get(i);
 
@@ -263,8 +273,7 @@ class FastData
           )   
         {
           foundMatch = true;
-        }
-        else if (
+        } else if (
           int(entry.size()) == 4 && 
           int(check.size()) == 4 && 
           int(entry.get(X_POS)) == int(check.get(X_POS)) &&
@@ -274,12 +283,10 @@ class FastData
           )
         {
           foundMatch = true;
-          
+
           // add yLen of 1
           entry.add(1);
-        }
-
-        else if (
+        } else if (
           int(entry.size()) == 3 && 
           int(check.size()) == 3 && 
           int(entry.get(X_POS)) == int(check.get(X_POS)) &&
@@ -314,30 +321,29 @@ class FastData
 
   /*
   private void printDataSize()
-  {
-    debug.println("drawData.size(): " + drawData.size());
-  }
-  
-  private void printEntry(ArrayList<Integer> entry)
-  {
-    for (int i = 0; i < entry.size(); i++)
-    {
-      debug.print(dataLables.get(i) + entry.get(i));
-    }
-    debug.println();
-  }
-
-  private void printData()
-  {
-    printDataSize();
-
-    for (ArrayList<Integer> entry : drawData)
-    {
-      printEntry(entry);
-    }
-
-    debug.println();
-  }
-  */
-
+   {
+   debug.println("drawData.size(): " + drawData.size());
+   }
+   
+   private void printEntry(ArrayList<Integer> entry)
+   {
+   for (int i = 0; i < entry.size(); i++)
+   {
+   debug.print(dataLables.get(i) + entry.get(i));
+   }
+   debug.println();
+   }
+   
+   private void printData()
+   {
+   printDataSize();
+   
+   for (ArrayList<Integer> entry : drawData)
+   {
+   printEntry(entry);
+   }
+   
+   debug.println();
+   }
+   */
 };
