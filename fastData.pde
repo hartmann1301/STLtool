@@ -24,6 +24,9 @@ class FastData extends Thread
 
   ArrayList<ArrayList<Integer>> drawData = new ArrayList<ArrayList<Integer>>();
 
+  // this is used to optimize direction y and z 
+  ArrayList<Integer> deleteList = new ArrayList<Integer>();
+
   final String taskName = new String("taskFastData");
 
   public void update()
@@ -31,16 +34,17 @@ class FastData extends Thread
     timeMonitor.startTask(taskName);
 
     drawData.clear();
-    createHorizontalLines();
-    createHorizontalLayers();
-    createHugeBoxes();
+    optimizeDirectionX();
+    optimizeDirectionY();
+    optimizeDirectionZ();
+    //printData();
 
     timeMonitor.stopTask(taskName);
   }
 
   public void draw()
   {
-    for (int i = 0; i < drawData.size() - 1; i++)
+    for (int i = 0; i < drawData.size(); i++)
     {
       // usingn for (ArrayList<Integer> entry : drawData) cause errors
       ArrayList<Integer> entry = drawData.get(i);
@@ -93,41 +97,29 @@ class FastData extends Thread
     }
   }
 
-  private int getLenX(int x, int y, int z)
-  {
-    int len = 1;
-
-    // check the rest of this y line, start with the next pixel
-    for (int xCheck = x + 1; xCheck < data.axisLength.x; xCheck++)
-    {   
-      if (data.isObject(xCheck, y, z) == false) 
-        return len;   
-
-      len++;
-    } 
-
-    return len;
-  }
-
-  private void createHorizontalLines()
+  private void optimizeDirectionX()
   {
     for (int z = 0; z < data.axisLength.z; z++)
     {
-      timeMonitor.updateTask(taskName, 0, 0.1, z, data.axisLength.z);
+      timeMonitor.updateTask(taskName, 0, 0.3, z, data.axisLength.z);
 
-      for (int x = 0; x < data.axisLength.x; x++)
-      {
-        for (int y = 0; y < data.axisLength.y; y++)
-        {             
-          // nothing to do when pixel is unknown or outside
-          if (data.isObject(x, y, z) == false)
+      // this would be fast and easy but it is not sorted correctly in y-direction
+      for (int y = 0; y < data.axisLength.y; y++)
+      {      
+        for (int x = 0; x < data.axisLength.x; x++)
+        {       
+          // will be incremented on first call
+          int xLen = 0;
+          boolean skipThis = true;
+
+          while (data.isObject(x + xLen, y, z))
+          {
+            xLen++;
+            skipThis = false;
+          }
+
+          if (skipThis)
             continue;
-
-          // check if this is the first pixel in a line
-          if (data.isObject(x - 1, y, z))
-            continue;          
-
-          //println("found first pixel (x:" + x + ",  y:" + y + ",  z:" + z + ")");
 
           // create entry and add coordinates
           ArrayList<Integer> entry = new ArrayList<Integer>();
@@ -135,7 +127,6 @@ class FastData extends Thread
           entry.add(y);
           entry.add(z);
 
-          int xLen = getLenX(x, y, z);
           //println(" returned len:" + xLen);
 
           // put xLen only if it is longer than one pixel
@@ -144,121 +135,145 @@ class FastData extends Thread
 
           // add entry with len 3 or 4
           drawData.add(entry);
+
+          x += xLen;
         }
       }
     }
   }
 
-  private void createHorizontalLayers()
+  boolean isIndexInDeleteList(int i)
   {
-    ArrayList<Integer> last = new ArrayList<Integer>();  
+    boolean skipThis = false;
+    for (int j = deleteList.size() - 1; j >= 0; j--) {
+      int id = deleteList.get(j);
+      if (id == i) {
+        skipThis = true;
 
-    for (int i = drawData.size() - 1; i >= 0; i--) {
-
-      timeMonitor.updateTask(taskName, 0.1, 0.2, i, drawData.size() - 1, true);
-
-      // get last entry
-      ArrayList<Integer> entry = drawData.get(i);
-
-      // lines to plates
-      if (entry.size() > 3 && last.size() > 3)
-      {
-        // check for same ecpect the y pos
-        if (
-          int(entry.get(X_POS)) == int(last.get(X_POS)) &&
-          int(entry.get(Y_POS)) == int(last.get(Y_POS) - 1) &&
-          int(entry.get(Z_POS)) == int(last.get(Z_POS)) &&
-          int(entry.get(X_LEN)) == int(last.get(X_LEN))
-          )
-        {
-          // remove the last one
-          drawData.remove(i + 1);
-
-          int yLen = 2;
-
-          // if last was already a rect increase its width
-          if (last.size() == 5)
-            yLen = last.get(Y_LEN) + 1;
-
-          entry.add(yLen);
-        }
-      }
-      // pixels in y direction to lines
-      else if (entry.size() > 2 && last.size() > 2)
-      {
-        // check for same ecpect the y pos
-        if (
-          int(entry.get(X_POS)) == int(last.get(X_POS)) &&
-          int(entry.get(Y_POS)) == int(last.get(Y_POS) - 1) &&
-          int(entry.get(Z_POS)) == int(last.get(Z_POS))
-          )
-        {
-          // remove the last one
-          drawData.remove(i + 1);
-
-          int yLen = 2;
-
-          // if last was already a line increase its width
-          if (last.size() == 5)
-            yLen = last.get(Y_LEN) + 1;
-
-          // add an xLen 1
-          entry.add(1);  
-          entry.add(yLen);
-        }
-      }
-
-      // create a deep copy for next loop
-      last.clear();
-      for (int j = 0; j < entry.size(); j++)
-      {
-        last.add(entry.get(j));
+        deleteList.remove(j);
       }
     }
+    return skipThis;
   }
 
-  private void createHugeBoxes()
+  private void optimizeDirectionY()
   {
-
-    ArrayList<Integer> deleteList = new ArrayList<Integer>();
+    deleteList.clear();
 
     for (int i = drawData.size() - 1; i >= 0; i--) {
 
-      timeMonitor.updateTask(taskName, 0.3, 0.7, i, drawData.size() - 1, true);
+      timeMonitor.updateTask(taskName, 0.3, 0.3, i, drawData.size() - 1, true);
 
       // get last entry
       ArrayList<Integer> entry = drawData.get(i);
-
-      //print(i + " - ");
-      //printEntry(entry);
 
       int matchCnt = 0;
 
-      boolean skipThis = false;
-      for (int j = deleteList.size() - 1; j >= 0; j--) {
-        int id = deleteList.get(j);
-        if (id == i) {
-          skipThis = true;
-
-          deleteList.remove(j);
-        }
-      }
-
-      if (skipThis)
+      // if this entry is in the delete list delete it now and remove it from deletelist
+      if (isIndexInDeleteList(i))
       {
-        //println("  remove This");
         drawData.remove(i);
         continue;
       }
 
       ArrayList<Integer> check = new ArrayList<Integer>();
 
+      boolean addYLen = false;
+
       // find entrys with same z
       for (int j = i - 1; j >= 0; j--) {
 
         check = drawData.get(j);
 
-        //println("compare " + entry.get(Z_POS) + " with " + (check.get(Z_POS) - 1));
+        // this speeds up the process because next z levels are compared
+        if (entry.get(Y_POS) > check.get(Y_POS) + 1)
+          break;
+
+        boolean foundMatch = false;
+
+        if (
+          int(entry.size()) == 4 && 
+          int(check.size()) == 4 && 
+          int(entry.get(X_POS)) == int(check.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(check.get(Y_POS) + 1) &&
+          int(entry.get(Z_POS)) == int(check.get(Z_POS)) &&
+          int(entry.get(X_LEN)) == int(check.get(X_LEN))
+          )
+        {
+          foundMatch = true;
+        } else if (
+          int(entry.size()) == 3 && 
+          int(check.size()) == 3 && 
+          int(entry.get(X_POS)) == int(check.get(X_POS)) &&
+          int(entry.get(Y_POS)) == int(check.get(Y_POS) + 1) &&
+          int(entry.get(Z_POS)) == int(check.get(Z_POS))
+          )
+        {
+          foundMatch = true;
+          addYLen = true;
+        }
+
+        if (foundMatch)
+        {
+          // manipulate y of entry minus one
+          entry.set(Y_POS, entry.get(Y_POS) - 1);
+
+          deleteList.add(j);
+
+          matchCnt++;
+        }
+      }
+
+      if (matchCnt > 0) {
+        
+        if (addYLen)
+        {
+          entry.add(1);
+        }
+
+        //println("  matchCnt " + matchCnt); 
+        entry.add(matchCnt + 1);
+      }
+    }
+  }
+
+  private void optimizeDirectionZ()
+  {
+    deleteList.clear();
+
+    for (int i = drawData.size() - 1; i >= 0; i--) {
+
+      timeMonitor.updateTask(taskName, 0.6, 0.4, i, drawData.size() - 1, true);
+
+      // get last entry
+      ArrayList<Integer> entry = drawData.get(i);
+
+      //debug.print(i + " - ");
+      //printEntry(entry);
+
+      int matchCnt = 0;
+
+      // if this entry is in the delete list delete it now and remove it from deletelist
+      if (isIndexInDeleteList(i))
+      {
+        drawData.remove(i);
+        continue;
+      }
+
+      ArrayList<Integer> check = new ArrayList<Integer>();
+
+      int extraOnes = 0;
+
+      // find entrys with same z
+      for (int j = i - 1; j >= 0; j--) {
+
+        check = drawData.get(j);
+
+        //debug.println("compare " + entry.get(Z_POS) + " with " + (check.get(Z_POS) - 1));
+
+        // this speeds up the process because next z levels are compared
+        if (entry.get(Z_POS) > check.get(Z_POS) + 1)
+          break;
 
         boolean foundMatch = false;
 
@@ -285,7 +300,7 @@ class FastData extends Thread
           foundMatch = true;
 
           // add yLen of 1
-          entry.add(1);
+          extraOnes = 1;
         } else if (
           int(entry.size()) == 3 && 
           int(check.size()) == 3 && 
@@ -297,12 +312,13 @@ class FastData extends Thread
           foundMatch = true;
 
           // add xLen und yLen of 1
-          entry.add(1);
-          entry.add(1);
+          extraOnes = 2;
         }
 
         if (foundMatch)
         {
+          //debug.println("found Match");
+
           // manipulate z of entry minus one
           entry.set(Z_POS, entry.get(Z_POS) - 1);
 
@@ -313,37 +329,41 @@ class FastData extends Thread
       }
 
       if (matchCnt > 0) {
+        // add ones because I found lines oder pixels above each other
+        for (int k = 0; k < extraOnes; k++)
+        {
+          entry.add(1);
+        }
+
         //println("  matchCnt " + matchCnt); 
         entry.add(matchCnt + 1);
       }
     }
   }
 
-  /*
-  private void printDataSize()
-   {
-   debug.println("drawData.size(): " + drawData.size());
-   }
-   
-   private void printEntry(ArrayList<Integer> entry)
-   {
-   for (int i = 0; i < entry.size(); i++)
-   {
-   debug.print(dataLables.get(i) + entry.get(i));
-   }
-   debug.println();
-   }
-   
-   private void printData()
-   {
-   printDataSize();
-   
-   for (ArrayList<Integer> entry : drawData)
-   {
-   printEntry(entry);
-   }
-   
-   debug.println();
-   }
-   */
+  void printDataSize()
+  {
+    debug.println("drawData.size(): " + drawData.size());
+  }
+
+  private void printEntry(ArrayList<Integer> entry)
+  {
+    for (int i = 0; i < entry.size(); i++)
+    {
+      debug.print(dataLables.get(i) + entry.get(i));
+    }
+    debug.println();
+  }
+
+  void printData()
+  {
+    printDataSize();
+
+    for (ArrayList<Integer> entry : drawData)
+    {
+      printEntry(entry);
+    }
+
+    debug.println();
+  }
 };

@@ -51,8 +51,6 @@ class Parser
     update();
 
     busy = false;
-    
-    updateBoxerThread();
   }
 
   private boolean isASCIICheck(String filePath) 
@@ -193,6 +191,8 @@ class Parser
 
     // sortiert die liste nach z values
     Collections.sort(triangleList, new TriangleComparator());
+
+    updateBoxerThread();
   }
 
   public void draw()

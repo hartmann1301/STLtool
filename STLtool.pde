@@ -21,12 +21,12 @@ void setup()
   gui.init();
 
   timeMonitor.setFrameRate(30);  
-  
-  //  parser.setExampleFile("cube247.stl");
-  parser.setExampleFile("ball12.stl");
-  //  parser.setExampleFile("abstaktT.stl");
-  //parser.setExampleFile("foxAscii.stl");  
-  
+
+  //parser.setExampleFile("cube03.stl");
+  //parser.setExampleFile("ball12.stl");
+  parser.setExampleFile("abstaktT.stl");
+  //parser.setExampleFile("owl.stl");  
+
   // do this without theard to init all the values
   parser.loadFile();
 
@@ -41,7 +41,7 @@ void draw()
     return;
 
   timeMonitor.startTask(drawTaskName);   
-  
+
   background(0);  // Set background to black  
 
   if (mousePressed)

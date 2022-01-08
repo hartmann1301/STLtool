@@ -1,6 +1,49 @@
 slicer 0.1
-update data took: 61ms
-update fastData took: 186ms
-update data took: 26ms
-update fastData took: 36ms
-update zylinder took: 75ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 35ms
+start:taskFastData
+done: taskFastData took: 19ms
+done: taskBoxer took: 58ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 28ms
+start:taskFastData
+done: taskFastData took: 16ms
+done: taskBoxer took: 45ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 32ms
+start:taskFastData
+done: taskFastData took: 15ms
+done: taskBoxer took: 47ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 48ms
+start:taskFastData
+done: taskFastData took: 9ms
+done: taskBoxer took: 57ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 36ms
+start:taskFastData
+done: taskFastData took: 14ms
+done: taskBoxer took: 51ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 141ms
+start:taskFastData
+done: taskFastData took: 35ms
+done: taskBoxer took: 179ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 942ms
+start:taskFastData
+done: taskFastData took: 137ms
+done: taskBoxer took: 1079ms
+start:taskBoxer
+start:taskRawData
+done: taskRawData took: 15190ms
+start:taskFastData
+done: taskFastData took: 5411ms
+done: taskBoxer took: 20601ms

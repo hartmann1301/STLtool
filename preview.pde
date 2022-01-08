@@ -36,7 +36,13 @@ class Preview
 
     if (gui.checkbox.getArrayValue()[CheckBoxes.arrayBox] == On)
     {
-      drawArrayBox();
+      if ((int) gui.previewStylesList.getValue() == PreviewStyles.concentric) 
+      {
+        drawCylinderBox();
+      } else
+      {
+        drawArrayBox();
+      }
     }
 
     switch((int) gui.previewStylesList.getValue()) 
@@ -162,7 +168,7 @@ class Preview
 
   void drawBox(float xPos, float yPos, float zPos)
   {
-    drawBox(xPos, yPos, zPos, 1, 1, 1); 
+    drawBox(xPos, yPos, zPos, 1, 1, 1);
   }
 
   void drawBox(float xPos, float yPos, float zPos, int xLen, int yLen, int zLen)
@@ -232,6 +238,52 @@ class Preview
 
     popMatrix();
     popStyle();
+  }
+
+  void drawCylinderBox()
+  {        
+    pushStyle();
+    pushMatrix();
+
+    stroke(stdColor.white);
+    noFill();
+
+    final float sf = boxer.sliceFaktor;
+    translate(-sf, -sf, -sf); 
+
+    Vector origin = new Vector(data.axisLength.x, data.axisLength.y, 0); 
+    origin.multiply(sf);
+
+    // go to Center because box draws from center
+    translateToPoint(origin, 0.5);
+
+    int r = zylinder.rMax;
+    int sides = zylinder.getRingCount(r); 
+
+    for (int i = 1; i <= r; i++)
+    {
+      drawCylinderPolygon(zylinder.getRingCount(i), i);
+    }
+    
+    translate(0, 0, data.axisLength.z * sf);
+
+    drawCylinderPolygon(sides, r);
+
+    popMatrix();
+    popStyle();
+  }
+
+  private void drawCylinderPolygon(int sides, float r)
+  {
+    r *= boxer.sliceFaktor;
+    float angle = 360.0 / sides;
+    beginShape();
+    for (int i = 0; i < sides; i++) {
+      float x = cos( radians( i * angle ) ) * r;
+      float y = sin( radians( i * angle ) ) * r;
+      vertex( x, y );
+    }
+    endShape(CLOSE);
   }
 
   void drawArrayBox()

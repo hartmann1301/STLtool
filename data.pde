@@ -51,17 +51,19 @@ class Data
     fillWithBoxes();
 
     timeMonitor.stopTask(taskName);
+    
+    //laser.init();
   }
 
   void draw()
   {
-    for (int x = 0; x < axisLength.x - 1; x++)
+    for (int x = 0; x < axisLength.x; x++)
     {
-      for (int y = 0; y < axisLength.y - 1; y++)
+      for (int y = 0; y < axisLength.y; y++)
       {
-        for (int z = 0; z < axisLength.z - 1; z++)
+        for (int z = 0; z < axisLength.z; z++)
         {
-          if (int(gui.sliderRows.getValue()) < z)
+          if (int(gui.sliderRows.getValue()) < z - 1)
             continue;
 
           BitStatus s = getPoint(x, y, z);
@@ -72,11 +74,14 @@ class Data
           if (s == BitStatus.INSIDE)
             continue;
 
-          preview.drawBox(s, x, y, z);
+          preview.drawBox(x, y, z);
+          //preview.drawBox(s, x, y, z);
         }
       }
     }
   }
+
+
 
   private void fillWithBoxes()
   {
@@ -311,7 +316,8 @@ class Data
   {
     if (x < 0 || y < 0 || z < 0)
     {
-      println("WARNING: Point (x:" + x + ",  y:" + y + ",  z:" + z + ") out of bounds");
+      // TODO maybe check for a bool here
+      //println("WARNING: Point (x:" + x + ",  y:" + y + ",  z:" + z + ") out of bounds");
       return;
     }
 
@@ -319,7 +325,7 @@ class Data
       y > axisLength.y - 1 || 
       z > axisLength.z - 1)
     {
-      println("WARNING: Point (x:" + x + ",  y:" + y + ",  z:" + z + ") out of bounds");
+      //println("WARNING: Point (x:" + x + ",  y:" + y + ",  z:" + z + ") out of bounds");
       return;
     }
 

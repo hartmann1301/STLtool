@@ -23,15 +23,14 @@ class TimeMonitor
     return taskDict.hasKey(name);
   }
 
-  /*
-  void printWhitespaces()
+  void printTasks()
   {
+    print("Tasks:");
     for (int i = 0; i < taskDict.size(); i++)
     {
-      print("  ");
+      print(" " + i + " " + taskDict.key(i)); 
     }
   }
-  */
 
   void startTask(final String name)
   {
